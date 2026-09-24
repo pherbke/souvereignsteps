@@ -1,0 +1,62 @@
+{
+  "cases" : [
+    {
+      "expected" : "ACCEPTED",
+      "id" : "linear 10 (notification)",
+      "observed" : "ACCEPTED"
+    },
+    {
+      "expected" : "ACCEPTED",
+      "id" : "linear 100 (notification)",
+      "observed" : "ACCEPTED"
+    },
+    {
+      "expected" : "ACCEPTED",
+      "id" : "linear 1000 (notification)",
+      "observed" : "ACCEPTED"
+    },
+    {
+      "expected" : "ACCEPTED",
+      "id" : "linear 1000 (presentation)",
+      "observed" : "ACCEPTED"
+    },
+    {
+      "expected" : "ACCEPTED",
+      "id" : "linear 1000 (mixed)",
+      "observed" : "ACCEPTED"
+    },
+    {
+      "expected" : "ACCEPTED",
+      "id" : "tree depth 2",
+      "observed" : "ACCEPTED"
+    },
+    {
+      "expected" : "ACCEPTED",
+      "id" : "tree depth 5",
+      "observed" : "ACCEPTED"
+    },
+    {
+      "expected" : "ACCEPTED",
+      "id" : "tree depth 10",
+      "observed" : "ACCEPTED"
+    }
+  ],
+  "machine" : "Apple M2 Pro",
+  "maxMedianValidateUs" : 28089.625,
+  "medianValidateUs" : 15808.790999999999,
+  "medianVerifyUs" : 66.040999999999997,
+  "os" : "Version 26.6.2 (Build 25G83)",
+  "repeats" : 200,
+  "validateMedianMicros" : {
+    "linear 10 (notification)" : 223.209,
+    "linear 100 (notification)" : 1598.375,
+    "linear 1000 (mixed)" : 19227,
+    "linear 1000 (notification)" : 15808.790999999999,
+    "linear 1000 (presentation)" : 28089.625,
+    "tree depth 2" : 140.917,
+    "tree depth 5" : 755.33399999999995,
+    "tree depth 10" : 23749.666000000001
+  },
+  "vectors" : 8,
+  "vectorsAgreeing" : 8
+}

@@ -1,0 +1,334 @@
+{
+  "baseCompiles": true,
+  "cases": [
+    {
+      "asIntended": true,
+      "codes": [
+        "E_UNSUPPORTED"
+      ],
+      "construct": "script task",
+      "diagnostics": [
+        {
+          "code": "E_UNSUPPORTED",
+          "element": "Present",
+          "message": "scriptTask is outside the supported subset"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_UNSUPPORTED",
+      "id": "N01"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_UNSUPPORTED"
+      ],
+      "construct": "parallel gateway",
+      "diagnostics": [
+        {
+          "code": "E_UNSUPPORTED",
+          "element": "Gw",
+          "message": "parallelGateway is outside the supported subset"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_UNSUPPORTED",
+      "id": "N02"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_UNSUPPORTED"
+      ],
+      "construct": "inclusive gateway",
+      "diagnostics": [
+        {
+          "code": "E_UNSUPPORTED",
+          "element": "Gw",
+          "message": "inclusiveGateway is outside the supported subset"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_UNSUPPORTED",
+      "id": "N03"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_UNSUPPORTED"
+      ],
+      "construct": "event subprocess",
+      "diagnostics": [
+        {
+          "code": "E_UNSUPPORTED",
+          "element": "Esp",
+          "message": "event subprocess is outside the supported subset"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_UNSUPPORTED",
+      "id": "N04"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_UNSUPPORTED"
+      ],
+      "construct": "boundary timer event",
+      "diagnostics": [
+        {
+          "code": "E_UNSUPPORTED",
+          "element": "Timeout",
+          "message": "boundaryEvent is outside the supported subset"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_UNSUPPORTED",
+      "id": "N05"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_UNSUPPORTED"
+      ],
+      "construct": "call activity",
+      "diagnostics": [
+        {
+          "code": "E_UNSUPPORTED",
+          "element": "Present",
+          "message": "callActivity is outside the supported subset"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_UNSUPPORTED",
+      "id": "N06"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_UNSUPPORTED"
+      ],
+      "construct": "intermediate catch event",
+      "diagnostics": [
+        {
+          "code": "E_UNSUPPORTED",
+          "element": "Wait",
+          "message": "intermediateCatchEvent is outside the supported subset"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_UNSUPPORTED",
+      "id": "N07"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_UNSUPPORTED"
+      ],
+      "construct": "event-based gateway",
+      "diagnostics": [
+        {
+          "code": "E_UNSUPPORTED",
+          "element": "Race",
+          "message": "eventBasedGateway is outside the supported subset"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_UNSUPPORTED",
+      "id": "N08"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_UNSUPPORTED"
+      ],
+      "construct": "timer start event",
+      "diagnostics": [
+        {
+          "code": "E_UNSUPPORTED",
+          "element": "Start",
+          "message": "timerEventDefinition on startEvent is outside the supported subset"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_UNSUPPORTED",
+      "id": "N09"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_UNSUPPORTED"
+      ],
+      "construct": "multi-instance loop marker",
+      "diagnostics": [
+        {
+          "code": "E_UNSUPPORTED",
+          "element": "Present",
+          "message": "multiInstanceLoopCharacteristics on task is outside the supported subset"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_UNSUPPORTED",
+      "id": "N10"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_UNBOUND_TASK"
+      ],
+      "construct": "task without wallet action",
+      "diagnostics": [
+        {
+          "code": "E_UNBOUND_TASK",
+          "element": "Check",
+          "message": "task is not bound to a wallet action"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_UNBOUND_TASK",
+      "id": "N11"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_CONDITION"
+      ],
+      "construct": "free-form gateway condition",
+      "diagnostics": [
+        {
+          "code": "E_CONDITION",
+          "element": "f1a",
+          "message": "condition '${age > 18}' is not an outcome test"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_CONDITION",
+      "id": "N12"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_OUTCOME"
+      ],
+      "construct": "branch on an undeclared outcome",
+      "diagnostics": [
+        {
+          "code": "E_OUTCOME",
+          "element": "f1a",
+          "message": "VERIFY_LOCAL_CREDENTIAL never returns 'maybe'"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_OUTCOME",
+      "id": "N13"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_START"
+      ],
+      "construct": "second start event",
+      "diagnostics": [
+        {
+          "code": "E_START",
+          "element": "Negative",
+          "message": "2 start events; exactly one required"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_START",
+      "id": "N14"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_UNREACHABLE"
+      ],
+      "construct": "unreachable task",
+      "diagnostics": [
+        {
+          "code": "E_UNREACHABLE",
+          "element": "Orphan",
+          "message": "node is unreachable from the start event"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_UNREACHABLE",
+      "id": "N15"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_CYCLE",
+        "E_UNREACHABLE"
+      ],
+      "construct": "retry loop",
+      "diagnostics": [
+        {
+          "code": "E_UNREACHABLE",
+          "element": "EndDenied",
+          "message": "node is unreachable from the start event"
+        },
+        {
+          "code": "E_CYCLE",
+          "element": "Check",
+          "message": "cycle through Check -> Check"
+        }
+      ],
+      "exclusive": false,
+      "expected": "E_CYCLE",
+      "id": "N16"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_CAPABILITY"
+      ],
+      "construct": "action type unknown to the wallet",
+      "diagnostics": [
+        {
+          "code": "E_CAPABILITY",
+          "element": "Check",
+          "message": "target wallet profile has no handler for 'BIOMETRIC_MATCH'"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_CAPABILITY",
+      "id": "N17"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_OFFLINE_UNMAPPED"
+      ],
+      "construct": "network step without offline outcome",
+      "diagnostics": [
+        {
+          "code": "E_OFFLINE_UNMAPPED",
+          "element": "Present",
+          "message": "network action must map the 'offline' outcome explicitly"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_OFFLINE_UNMAPPED",
+      "id": "N18"
+    },
+    {
+      "asIntended": true,
+      "codes": [
+        "E_PARAM"
+      ],
+      "construct": "parameter bound to a runtime expression",
+      "diagnostics": [
+        {
+          "code": "E_PARAM",
+          "element": "Check",
+          "message": "credentialType refers to context.requestedType; packages carry literals, not expressions"
+        }
+      ],
+      "exclusive": true,
+      "expected": "E_PARAM",
+      "id": "N19"
+    }
+  ]
+}

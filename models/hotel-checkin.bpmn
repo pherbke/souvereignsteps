@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Hotel check-in, restricted port of the prototype's dynamic hospitality model.
+     Kept: local reservation check, presentation at the check-in endpoint,
+     city-tax confirmation and payment, room-key issuance, in-stay activation.
+     Moved out of the package: the lobby trigger (package acquisition), the
+     24-hour checkout wait and wallet-side revocation (checkout station and
+     issuer), and the context-dependent city-tax branch (authoring-time choice). -->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Defs_HotelCheckin" targetNamespace="urn:example:processes:hotel">
+  <bpmn:process id="HotelCheckIn" name="Hotel check-in" isExecutable="true">
+    <bpmn:extensionElements><camunda:properties>
+      <camunda:property name="packageId" value="com.example.hotel.checkin"/>
+      <camunda:property name="version" value="3"/>
+      <camunda:property name="minVersion" value="2"/>
+      <camunda:property name="notAfter" value="2027-01-31T23:59:59Z"/>
+    </camunda:properties></bpmn:extensionElements>
+
+    <bpmn:startEvent id="Start"/>
+    <bpmn:sequenceFlow id="f0" sourceRef="Start" targetRef="VerifyReservation"/>
+
+    <bpmn:task id="VerifyReservation" name="Check for a reservation credential">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="VERIFY_LOCAL_CREDENTIAL"/>
+        <camunda:property name="credentialType" value="ReservationVC"/>
+        <camunda:property name="cacheOnly" value="true"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f1" sourceRef="VerifyReservation" targetRef="GwReservation"/>
+    <bpmn:exclusiveGateway id="GwReservation"/>
+    <bpmn:sequenceFlow id="f1a" sourceRef="GwReservation" targetRef="PresentCheckIn">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'success'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f1b" sourceRef="GwReservation" targetRef="NotifyNoReservation">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'failure'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+    <bpmn:task id="NotifyNoReservation" name="No reservation found">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="USER_NOTIFICATION"/>
+        <camunda:property name="message" value="No reservation found. Please contact the reception."/>
+        <camunda:property name="alertType" value="WARNING"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f2" sourceRef="NotifyNoReservation" targetRef="EndNoReservation"/>
+
+    <bpmn:task id="PresentCheckIn" name="Present identity and reservation">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="PRESENT_CREDENTIAL"/>
+        <camunda:property name="presentationRequest" value="IdentityVC,ReservationVC"/>
+        <camunda:property name="claims" value="given_name,family_name,birth_date,nationality,reservationId"/>
+        <camunda:property name="channel" value="remote"/>
+        <camunda:property name="endpointUrl" value="https://checkin.hotel.example/oid4vp"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f3" sourceRef="PresentCheckIn" targetRef="GwPresent"/>
+    <bpmn:exclusiveGateway id="GwPresent" default="f3c"/>
+    <bpmn:sequenceFlow id="f3a" sourceRef="GwPresent" targetRef="ConfirmCityTax">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'success'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f3b" sourceRef="GwPresent" targetRef="EndOffline">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'offline'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f3c" sourceRef="GwPresent" targetRef="NotifyFallback"/>
+
+    <bpmn:userTask id="ConfirmCityTax" name="Confirm city tax">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="REQUEST_USER_INPUT"/>
+        <camunda:property name="formType" value="PAYMENT"/>
+        <camunda:property name="promptMessage" value="Please confirm the city tax payment of 5.00 EUR."/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="f4" sourceRef="ConfirmCityTax" targetRef="GwConfirm"/>
+    <bpmn:exclusiveGateway id="GwConfirm" default="f4b"/>
+    <bpmn:sequenceFlow id="f4a" sourceRef="GwConfirm" targetRef="PayCityTax">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'success'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f4b" sourceRef="GwConfirm" targetRef="NotifyFallback"/>
+
+    <bpmn:task id="PayCityTax" name="Pay city tax">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="PROCESS_PAYMENT"/>
+        <camunda:property name="amount" value="5.00"/>
+        <camunda:property name="currency" value="EUR"/>
+        <camunda:property name="merchantId" value="did:web:hotel.example"/>
+        <camunda:property name="paymentEndpointUrl" value="https://pay.hotel.example/v1/intents"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f5" sourceRef="PayCityTax" targetRef="GwPay"/>
+    <bpmn:exclusiveGateway id="GwPay" default="f5c"/>
+    <bpmn:sequenceFlow id="f5a" sourceRef="GwPay" targetRef="RequestRoomKey">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'success'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f5b" sourceRef="GwPay" targetRef="EndOffline">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'offline'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f5c" sourceRef="GwPay" targetRef="NotifyFallback"/>
+
+    <bpmn:task id="RequestRoomKey" name="Receive digital room key">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="REQUEST_VC"/>
+        <camunda:property name="credentialType" value="DigitalRoomKeyVC"/>
+        <camunda:property name="issuerId" value="did:web:hotel.example"/>
+        <camunda:property name="credentialEndpointUrl" value="https://keys.hotel.example/oid4vci"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f6" sourceRef="RequestRoomKey" targetRef="GwKey"/>
+    <bpmn:exclusiveGateway id="GwKey" default="f6c"/>
+    <bpmn:sequenceFlow id="f6a" sourceRef="GwKey" targetRef="ActivateRemote">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'success'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f6b" sourceRef="GwKey" targetRef="EndOffline">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'offline'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f6c" sourceRef="GwKey" targetRef="NotifyFallback"/>
+
+    <bpmn:task id="ActivateRemote" name="Activate in-stay access">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="ACTIVATE_REMOTE_CONTROL"/>
+        <camunda:property name="permissions" value="UNLOCK_DOOR,ELEVATOR"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f7" sourceRef="ActivateRemote" targetRef="EndCheckedIn"/>
+
+    <bpmn:task id="NotifyFallback" name="Refer guest to reception">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="USER_NOTIFICATION"/>
+        <camunda:property name="message" value="Automatic check-in stopped. Please contact the reception."/>
+        <camunda:property name="alertType" value="ERROR"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f8" sourceRef="NotifyFallback" targetRef="EndFallback"/>
+
+    <bpmn:endEvent id="EndCheckedIn" name="Checked in">
+      <bpmn:extensionElements><camunda:properties><camunda:property name="result" value="success"/></camunda:properties></bpmn:extensionElements>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndNoReservation" name="No reservation">
+      <bpmn:extensionElements><camunda:properties><camunda:property name="result" value="deny"/></camunda:properties></bpmn:extensionElements>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndFallback" name="Manual check-in">
+      <bpmn:extensionElements><camunda:properties><camunda:property name="result" value="deny"/></camunda:properties></bpmn:extensionElements>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndOffline" name="Service unreachable">
+      <bpmn:extensionElements><camunda:properties><camunda:property name="result" value="error"/></camunda:properties></bpmn:extensionElements>
+    </bpmn:endEvent>
+  </bpmn:process>
+</bpmn:definitions>

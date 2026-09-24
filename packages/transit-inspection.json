@@ -1,0 +1,88 @@
+{
+  "floor": 2,
+  "id": "org.example.transit.inspection",
+  "initial": "CheckTicket",
+  "notAfter": "2027-03-31T23:59:59Z",
+  "schema": "glovebox/1",
+  "states": {
+    "CheckTicket": {
+      "action": {
+        "params": {
+          "cacheOnly": "true",
+          "credentialType": "TransitTicketVC"
+        },
+        "type": "VERIFY_LOCAL_CREDENTIAL"
+      },
+      "on": {
+        "failure": "NotifyNoTicket",
+        "success": "PresentProof"
+      }
+    },
+    "EndNoTicket": {
+      "terminal": "deny"
+    },
+    "EndPassed": {
+      "terminal": "success"
+    },
+    "EndRejected": {
+      "terminal": "deny"
+    },
+    "LogFailed": {
+      "action": {
+        "params": {
+          "eventMessage": "Inspection failed",
+          "status": "FAILURE"
+        },
+        "type": "LOG_EVENT"
+      },
+      "on": {
+        "success": "EndRejected"
+      }
+    },
+    "LogPassed": {
+      "action": {
+        "params": {
+          "eventMessage": "Inspection passed",
+          "status": "SUCCESS"
+        },
+        "type": "LOG_EVENT"
+      },
+      "on": {
+        "success": "EndPassed"
+      }
+    },
+    "NotifyNoTicket": {
+      "action": {
+        "params": {
+          "alertType": "WARNING",
+          "message": "No valid ticket found. Please contact customer service."
+        },
+        "type": "USER_NOTIFICATION"
+      },
+      "on": {
+        "success": "EndNoTicket"
+      }
+    },
+    "PresentProof": {
+      "action": {
+        "params": {
+          "channel": "proximity",
+          "claims": [
+            "ticketClass",
+            "validUntil"
+          ],
+          "presentationRequest": [
+            "TransitTicketVC"
+          ],
+          "targetDevice": "NFC"
+        },
+        "type": "PRESENT_CREDENTIAL"
+      },
+      "on": {
+        "failure": "LogFailed",
+        "success": "LogPassed"
+      }
+    }
+  },
+  "version": 3
+}

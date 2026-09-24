@@ -1,0 +1,266 @@
+#!/usr/bin/env python3
+"""Writes the paper's pgfplots figures from the artifact's results.
+
+  python3 make_plots.py --paper ../paper
+
+Figures (house palette, editable TikZ/pgfplots):
+  figures/fig_scalability.tex  (a) compile time against BPMN nodes for both compilers,
+                               (b) validation time against package states on every measured platform
+  figures/fig_context.tex      one Glovebox step next to the wallet's credential operations
+  sections/generated_plots.tex shared plot styles and the reference values used in the text
+
+Inputs: results/compilation.json, results/swift_stress.json, results/swift.json,
+results/wallet_<tag>.json (one per platform; `ios` is the phone, `sim` the simulator).
+"""
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+MODELS = ["hotel-checkin", "hotel-checkout", "transit-ticket", "transit-inspection", "student-status"]
+
+# Lagos et al., SAC 2026, Table 1: mean wallet (prover) time, mobile phone, 10 attributes, reveal 0.8.
+LAGOS_MOBILE_MS = {"SD-JWT": 24, "BBS2023": 189}
+
+
+def load(name):
+    path = ROOT / "results" / name
+    return json.loads(path.read_text()) if path.exists() else None
+
+
+def fmt(x, digits=3):
+    return f"{x:.{digits}g}"
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--paper", type=Path, required=True)
+    args = parser.parse_args()
+    figures = args.paper / "figures"
+    figures.mkdir(parents=True, exist_ok=True)
+
+    comp = load("compilation.json")
+    stress_cli = load("swift_stress.json")
+    cli = load("swift.json")
+    wallets = {}
+    for tag, label in (("ios", "phone"), ("sim", "simulator")):
+        data = load(f"wallet_{tag}.json")
+        if data:
+            wallets[tag] = data
+
+    # ---- (a) compilation: time against BPMN nodes, synthetic workloads only (both compilers accept them)
+    rows = [w for w in comp["workloads"] if not w["glovebox"]["rejected"]]
+    rows.sort(key=lambda w: w["bpmnNodes"])
+    proto = " ".join(f"({w['bpmnNodes']},{fmt(w['prototype']['totalMs'])})" for w in rows)
+    glove = " ".join(f"({w['bpmnNodes']},{fmt(w['glovebox']['compileMs'])})" for w in rows)
+
+    # ---- (b) validation: time against states, per platform
+    def series(points):
+        return " ".join(f"({s},{fmt(us)})" for s, us in sorted(points))
+
+    states_of = {w["workload"]: w["glovebox"]["states"] for w in rows}
+    platforms = []  # (label, style, stress points, real-package points)
+    if stress_cli and cli:
+        pts = [(states_of[k], v) for k, v in stress_cli["validateMedianMicros"].items() if k in states_of]
+        real = []
+        packages = load("packages.json") or {}
+        for name in MODELS:
+            key = f"OK-{name}"
+            if key in cli.get("validateMedianMicros", {}) and name in packages:
+                real.append((packages[name]["states"], cli["validateMedianMicros"][key]))
+        platforms.append((cli.get("machine", "development machine").replace("Apple ", "") + " (CLI)", "slate", pts, real))
+    for tag, style in (("sim", "myblue"), ("ios", "mygreen")):
+        if tag not in wallets:
+            continue
+        w = wallets[tag]
+        pts = [(v["states"], v["validateMedianUs"]) for v in w.get("stress", {}).values()]
+        real = [(p["states"], p["validateMedianUs"]) for p in w["packages"].values()]
+        name = w["device"]["marketingName"].replace(" simulator", " sim.")
+        platforms.append((name, style, pts, real))
+
+    plots_b = []
+    for label, style, pts, real in platforms:
+        if pts:
+            plots_b.append(f"\\addplot[color={style}, mark=o, mark size=1.6pt, line width=0.9pt] coordinates {{{series(pts)}}};")
+            plots_b.append(f"\\addlegendentry{{{label}}}")
+        if real:
+            plots_b.append(f"\\addplot[color={style}, only marks, mark=*, mark size=1.9pt, forget plot] coordinates {{{series(real)}}};")
+
+    # ---- (b) output size against nodes
+    proto_size = " ".join(f"({w['bpmnNodes']},{w['prototype']['outputBytes']})" for w in rows)
+    glove_size = " ".join(f"({w['bpmnNodes']},{w['glovebox']['jwsBytes']})" for w in rows)
+
+    # ---- (c) revocation fidelity: emitted revocation states against authored tasks
+    fid = comp.get("fidelity", [])
+    def fid_series(placement, key):
+        pts = [(r["authored"], r[key]) for r in fid if r["placement"] == placement and r.get(key) is not None]
+        return " ".join(f"({k},{v})" for k, v in sorted(pts))
+    esp_rejected = all(r["gloveboxRejected"] for r in fid if r["placement"] == "event-subprocess")
+    flow_ok = all(r.get("gloveboxEmitted") == r["authored"] and r.get("prototypeEmitted") == r["authored"]
+                  for r in fid if r["placement"] == "flow")
+    proto_esp_zero = all(r.get("prototypeEmitted") == 0 for r in fid if r["placement"] == "event-subprocess")
+    if fid and not (esp_rejected and flow_ok and proto_esp_zero):
+        print("WARNING: fidelity results differ from the paper's statements", esp_rejected, flow_ok, proto_esp_zero)
+    fid_note = ("\\node[font=\\footnotesize, color=mygreen, anchor=north west, align=left] at (rel axis cs:0.03,0.97) "
+                "{event subproc.:\\\\\\sysname\\\\rejects all $k$};") if esp_rejected else ""
+
+    fig_a = f"""% Generated by artifact/make_plots.py -- do not edit by hand.
+\\begin{{tikzpicture}}
+\\begin{{groupplot}}[
+  group style={{group size=2 by 2, horizontal sep=1.4cm, vertical sep=1.45cm}},
+  width=0.40\\textwidth, height=4.3cm,
+  tick label style={{font=\\small}}, label style={{font=\\small}},
+  legend style={{font=\\small, draw=none, fill=none, legend columns=-1, column sep=6pt}},
+  legend image post style={{xscale=0.55}},
+  legend cell align=left, grid=major, grid style={{slate!25}},
+  every axis plot/.append style={{line width=0.9pt}},
+  title style={{font=\\small\\bfseries, yshift=-3pt}},
+]
+\\nextgroupplot[title={{(a) Compilation}}, xlabel={{BPMN nodes}}, ylabel={{time (ms)}}, xmode=log, ymode=log, legend to name=legCompilers]
+\\addplot[color=myorange, mark=square*, mark size=1.4pt] coordinates {{{proto}}};
+\\addlegendentry{{prototype}}
+\\addplot[color=mygreen, mark=*, mark size=1.4pt] coordinates {{{glove}}};
+\\addlegendentry{{\\sysname}}
+\\nextgroupplot[title={{(b) Output size}}, xlabel={{BPMN nodes}}, ylabel={{bytes}}, xmode=log, ymode=log]
+\\addplot[color=myorange, mark=square*, mark size=1.4pt] coordinates {{{proto_size}}};
+\\addplot[color=mygreen, mark=*, mark size=1.4pt] coordinates {{{glove_size}}};
+\\nextgroupplot[title={{(c) Revocation fidelity}}, xlabel={{revocation tasks authored $k$}}, ylabel={{states emitted}},
+  xmin=-0.3, xmax=6.3, ymin=-0.4, ymax=6.6, xtick={{0,2,4,6}}, ytick={{0,2,4,6}}, legend to name=legFidelity]
+\\addplot[color=mygreen, mark=*, mark size=1.4pt] coordinates {{{fid_series("flow", "gloveboxEmitted")}}};
+\\addlegendentry{{\\sysname, flow}}
+\\addplot[color=myorange, mark=square, mark size=1.6pt, densely dashed] coordinates {{{fid_series("flow", "prototypeEmitted")}}};
+\\addlegendentry{{prototype, flow}}
+\\addplot[color=myred, mark=square*, mark size=1.4pt] coordinates {{{fid_series("event-subprocess", "prototypeEmitted")}}};
+\\addlegendentry{{prototype, event subproc.}}
+{fid_note}
+\\nextgroupplot[title={{(d) Validation}}, xlabel={{package states $|S|$}}, ylabel={{time ($\\mu$s)}}, xmode=log, ymode=log, legend to name=legPlatforms,
+  extra x ticks={{64}}, extra x tick labels={{}}, extra x tick style={{grid=major, grid style={{myred, dashed, line width=0.7pt}}}}]
+{chr(10).join(plots_b)}
+\\end{{groupplot}}
+\\path (group c1r2.south west) -- (group c2r2.south east) coordinate[midway] (legendmid);
+\\node[anchor=north, yshift=-1.0cm, font=\\footnotesize, inner sep=0pt, align=center] at (legendmid) {{%
+  \\pgfplotslegendfromname{{legCompilers}}\\hspace{{1.5em}}\\pgfplotslegendfromname{{legFidelity}}\\\\[2pt]
+  \\pgfplotslegendfromname{{legPlatforms}}}};
+\\end{{tikzpicture}}
+"""
+    (figures / "fig_scalability.tex").write_text(fig_a)
+
+    # ---- context bar chart on the best available wallet platform
+    tag = "ios" if "ios" in wallets else ("sim" if "sim" in wallets else None)
+    # Defaults keep the paper compiling before a wallet run with credential operations exists.
+    macros = {k: "--" for k in ("walletEsSignUs", "walletSdjwtPresentMs", "walletBbsProofMs", "walletBbsVerifyMs",
+                                "walletLayerPercentSdjwt", "walletLayerPercentBbs", "walletRevalidateMs",
+                                "walletPersistMs", "walletPersistPercent", "walletReadRecordMs", "walletPersistMsTwo",
+                                "walletOverheadPercentSdjwt", "walletOverheadPercentBbs",
+                                "walletOverheadPercentLagosSdjwt", "walletOverheadPercentLagosBbs",
+                                "walletUsPerState", "walletStressMinStates", "walletStressMinUs",
+                                "walletStressMaxStates", "walletStressMaxMs")}
+    macros["walletContextDevice"] = wallets[tag]["device"]["marketingName"] if tag else "wallet"
+    macros["walletStressDevice"] = macros["walletContextDevice"]
+    if tag:
+        w = wallets[tag]
+        hotel = w["packages"]["hotel-checkin"]
+        ops = w.get("credentialOps", {})
+        step = w["driverStep"]
+        ops = w.get("credentialOps", {})
+        pe = w.get("prototypeEngine", {})
+        groups = []  # (legend label, color, mark, [(row label, value)])
+        groups.append(("\\sysname", "myblue", "*", [
+            ("runtime transition", hotel["advancePerTransitionUs"]),
+            ("package validation", hotel["validateMedianUs"]),
+            ("package install", hotel["installMedianUs"]),
+            ("driver step (re-validate + persist)", step["medianUs"]),
+        ]))
+        if pe:
+            groups.append(("prototype engine", "slate", "square*", [
+                ("prototype: store statechart", pe["installMedianUs"]),
+                ("prototype: forced step", pe["stepMedianUs"]),
+            ]))
+        if ops:
+            groups.append(("credential operation", "myorange", "diamond*", [
+                ("ES256 signature (proof, KB-JWT)", ops["es256SignMedianUs"]),
+                ("SD-JWT presentation, key binding", ops["sdjwtPresentMedianUs"]),
+                ("BBS+ proof, 8 attributes", ops["bbsProofMedianUs"]),
+                ("BBS+ verification", ops["bbsVerifyMedianUs"]),
+            ]))
+        groups.append(("reported, other device", "slate", "o", [
+            (f"{k} presentation (reported)", v * 1000) for k, v in LAGOS_MOBILE_MS.items()]))
+        labels = [l for _, _, _, rows_ in groups for l, _ in rows_]
+        ycoords = ",".join(f"{{{l}}}" for l in reversed(labels))
+        body = []
+        for legend, color, mark, rows_ in groups:
+            coords = " ".join(f"({fmt(v)},{{{l}}})" for l, v in rows_)
+            body.append(f"\\addplot[only marks, mark={mark}, mark size=2.4pt, color={color}, point meta=rawx, "
+                        f"nodes near coords={{\\pgfmathprintnumber[fixed relative, precision=2, 1000 sep={{,}}]{{\\pgfplotspointmeta}}}}, "
+                        f"every node near coord/.append style={{anchor=west, xshift=4pt, font=\\footnotesize, color=black}}] coordinates {{{coords}}};")
+            body.append(f"\\addlegendentry{{{legend}}}")
+        device = w["device"]["marketingName"]
+        fig_c = f"""% Generated by artifact/make_plots.py -- do not edit by hand.
+\\begin{{tikzpicture}}
+\\begin{{axis}}[
+  scale only axis, width=0.49\\columnwidth, height={0.36 * len(labels):.1f}cm, xmode=log, log basis x=10,
+  xmin=0.2, xmax=3000000,
+  xlabel={{time ($\\mu$s, log scale)}}, symbolic y coords={{{ycoords}}}, ytick={{{ycoords}}},
+  y axis line style={{draw=none}}, ytick style={{draw=none}},
+  tick label style={{font=\\footnotesize}}, label style={{font=\\footnotesize}},
+  yticklabel style={{font=\\footnotesize, align=right, text width=3.6cm}},
+  legend style={{font=\\footnotesize, draw=none, fill=none, at={{(0.5,-0.18)}}, anchor=north, legend columns=2, column sep=2pt}},
+  legend cell align=left, grid=both, grid style={{slate!25}}, enlarge y limits=0.08,
+  legend image post style={{xscale=0.6}},
+]
+{chr(10).join(body)}
+\\end{{axis}}
+\\end{{tikzpicture}}
+"""
+        (figures / "fig_context.tex").write_text(fig_c)
+
+        # reference numbers used in the text
+        if ops:
+            step = w["driverStep"]["medianUs"]
+            layer = hotel["validateMedianUs"] + hotel["advancePerTransitionUs"]
+            macros.update({
+                "walletLayerPercentSdjwt": f"{100 * layer / ops['sdjwtPresentMedianUs']:.0f}",
+                "walletLayerPercentBbs": f"{100 * layer / ops['bbsProofMedianUs']:.0f}",
+                "walletRevalidateMs": f"{w['driverStep'].get('revalidateMedianUs', 0) / 1000:.1f}",
+                "walletPersistMs": f"{w['driverStep'].get('persistMedianUs', 0) / 1000:.1f}",
+                "walletPersistPercent": f"{100 * w['driverStep'].get('persistMedianUs', 0) / step:.0f}",
+                "walletReadRecordMs": f"{w['driverStep'].get('readRecordMedianUs', 0) / 1000:.2f}",
+                "walletPersistMsTwo": f"{w['driverStep'].get('persistMedianUs', 0) / 1000:.2f}",
+                "walletEsSignUs": f"{ops['es256SignMedianUs']:.0f}",
+                "walletSdjwtPresentMs": f"{ops['sdjwtPresentMedianUs'] / 1000:.1f}",
+                "walletBbsProofMs": f"{ops['bbsProofMedianUs'] / 1000:.0f}" if ops['bbsProofMedianUs'] >= 10000 else f"{ops['bbsProofMedianUs'] / 1000:.1f}",
+                "walletBbsVerifyMs": f"{ops['bbsVerifyMedianUs'] / 1000:.1f}",
+                "walletOverheadPercentSdjwt": f"{100 * step / ops['sdjwtPresentMedianUs']:.0f}",
+                "walletOverheadPercentBbs": f"{100 * step / ops['bbsProofMedianUs']:.1f}",
+                "walletOverheadPercentLagosSdjwt": f"{100 * step / (LAGOS_MOBILE_MS['SD-JWT'] * 1000):.0f}",
+                "walletOverheadPercentLagosBbs": f"{100 * step / (LAGOS_MOBILE_MS['BBS2023'] * 1000):.1f}",
+                "walletContextDevice": device,
+            })
+        stress = w.get("stress", {})
+        if stress:
+            pts = sorted((v["states"], v["validateMedianUs"]) for v in stress.values())
+            n = len(pts)
+            sx = sum(s for s, _ in pts); sy = sum(u for _, u in pts)
+            sxx = sum(s * s for s, _ in pts); sxy = sum(s * u for s, u in pts)
+            slope = (n * sxy - sx * sy) / (n * sxx - sx * sx)
+            macros.update({
+                "walletUsPerState": f"{slope:.0f}",
+                "walletStressMinStates": str(pts[0][0]),
+                "walletStressMinUs": f"{pts[0][1]:.0f}",
+                "walletStressMaxStates": f"{pts[-1][0]:,}".replace(",", "{,}"),
+                "walletStressMaxMs": f"{pts[-1][1] / 1000:.0f}",
+                "walletStressDevice": device,
+            })
+    macros["lagosSdjwtMobileMs"] = str(LAGOS_MOBILE_MS["SD-JWT"])
+    macros["lagosBbsMobileMs"] = str(LAGOS_MOBILE_MS["BBS2023"])
+    (args.paper / "sections" / "generated_plots.tex").write_text(
+        "% Generated by artifact/make_plots.py -- do not edit by hand.\n"
+        + "".join(f"\\newcommand{{\\{k}}}{{{v}}}\n" for k, v in macros.items()))
+    print("wrote fig_scalability.tex" + (", fig_context.tex" if tag else "") + f", {len(macros)} macros")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

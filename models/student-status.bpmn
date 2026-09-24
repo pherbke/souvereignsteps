@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Student-status proof at a counter (canteen, library, cinema), built on the
+     student credential of the underlying credential platform. The holder
+     confirms the disclosure explicitly before a proximity presentation. -->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Defs_Student" targetNamespace="urn:example:processes:student">
+  <bpmn:process id="StudentStatus" name="Student-status proof" isExecutable="true">
+    <bpmn:extensionElements><camunda:properties>
+      <camunda:property name="packageId" value="edu.example.univ.student-status"/>
+      <camunda:property name="version" value="1"/>
+      <camunda:property name="minVersion" value="1"/>
+      <camunda:property name="notAfter" value="2027-09-30T23:59:59Z"/>
+    </camunda:properties></bpmn:extensionElements>
+
+    <bpmn:startEvent id="Start"/>
+    <bpmn:sequenceFlow id="f0" sourceRef="Start" targetRef="CheckStudentVC"/>
+
+    <bpmn:task id="CheckStudentVC" name="Check for a current student credential">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="VERIFY_LOCAL_CREDENTIAL"/>
+        <camunda:property name="credentialType" value="StudentVC"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f1" sourceRef="CheckStudentVC" targetRef="GwStudent"/>
+    <bpmn:exclusiveGateway id="GwStudent" default="f1b"/>
+    <bpmn:sequenceFlow id="f1a" sourceRef="GwStudent" targetRef="ConfirmDisclosure">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'success'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f1b" sourceRef="GwStudent" targetRef="NotifyNotShared"/>
+
+    <bpmn:userTask id="ConfirmDisclosure" name="Confirm disclosure">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="REQUEST_USER_INPUT"/>
+        <camunda:property name="formType" value="CONSENT"/>
+        <camunda:property name="promptMessage" value="Share your student status and its validity date with this counter?"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="f2" sourceRef="ConfirmDisclosure" targetRef="GwConsent"/>
+    <bpmn:exclusiveGateway id="GwConsent" default="f2b"/>
+    <bpmn:sequenceFlow id="f2a" sourceRef="GwConsent" targetRef="PresentStatus">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'success'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f2b" sourceRef="GwConsent" targetRef="EndNotShared"/>
+
+    <bpmn:task id="PresentStatus" name="Present student status">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="PRESENT_CREDENTIAL"/>
+        <camunda:property name="presentationRequest" value="StudentVC"/>
+        <camunda:property name="claims" value="studentStatus,validUntil"/>
+        <camunda:property name="channel" value="proximity"/>
+        <camunda:property name="targetDevice" value="BLE"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f3" sourceRef="PresentStatus" targetRef="GwPresent"/>
+    <bpmn:exclusiveGateway id="GwPresent"/>
+    <bpmn:sequenceFlow id="f3a" sourceRef="GwPresent" targetRef="EndShown">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'success'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f3b" sourceRef="GwPresent" targetRef="EndNotShared">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'failure'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+    <bpmn:task id="NotifyNotShared" name="No current student credential">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="USER_NOTIFICATION"/>
+        <camunda:property name="message" value="No current student credential found."/>
+        <camunda:property name="alertType" value="INFO"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f4" sourceRef="NotifyNotShared" targetRef="EndNotShared"/>
+
+    <bpmn:endEvent id="EndShown" name="Status shown">
+      <bpmn:extensionElements><camunda:properties><camunda:property name="result" value="success"/></camunda:properties></bpmn:extensionElements>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndNotShared" name="Not shown">
+      <bpmn:extensionElements><camunda:properties><camunda:property name="result" value="deny"/></camunda:properties></bpmn:extensionElements>
+    </bpmn:endEvent>
+  </bpmn:process>
+</bpmn:definitions>

@@ -1,0 +1,358 @@
+[
+  {
+    "acceptedAfterClientUpdate": 0,
+    "applied": 5,
+    "change": "Required credential type",
+    "details": [
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "hotel-checkin",
+        "offlineAfter": "1/9",
+        "offlineBefore": "1/9"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "hotel-checkout",
+        "offlineAfter": "0/3",
+        "offlineBefore": "0/3"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "transit-ticket",
+        "offlineAfter": "1/6",
+        "offlineBefore": "1/6"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "transit-inspection",
+        "offlineAfter": "3/3",
+        "offlineBefore": "3/3"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "student-status",
+        "offlineAfter": "4/4",
+        "offlineBefore": "4/4"
+      }
+    ],
+    "key": "credential",
+    "offlineChanged": 0,
+    "packageOnly": 5
+  },
+  {
+    "acceptedAfterClientUpdate": 0,
+    "applied": 5,
+    "change": "Disclosed claim set (minimized)",
+    "details": [
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "hotel-checkin",
+        "offlineAfter": "1/9",
+        "offlineBefore": "1/9"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "hotel-checkout",
+        "offlineAfter": "0/3",
+        "offlineBefore": "0/3"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "transit-ticket",
+        "offlineAfter": "1/6",
+        "offlineBefore": "1/6"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "transit-inspection",
+        "offlineAfter": "3/3",
+        "offlineBefore": "3/3"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "student-status",
+        "offlineAfter": "4/4",
+        "offlineBefore": "4/4"
+      }
+    ],
+    "key": "claims",
+    "offlineChanged": 0,
+    "packageOnly": 5
+  },
+  {
+    "acceptedAfterClientUpdate": 0,
+    "applied": 5,
+    "change": "User-facing text",
+    "details": [
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "hotel-checkin",
+        "offlineAfter": "1/9",
+        "offlineBefore": "1/9"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "hotel-checkout",
+        "offlineAfter": "0/3",
+        "offlineBefore": "0/3"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "transit-ticket",
+        "offlineAfter": "1/6",
+        "offlineBefore": "1/6"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "transit-inspection",
+        "offlineAfter": "3/3",
+        "offlineBefore": "3/3"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "student-status",
+        "offlineAfter": "4/4",
+        "offlineBefore": "4/4"
+      }
+    ],
+    "key": "copy",
+    "offlineChanged": 0,
+    "packageOnly": 5
+  },
+  {
+    "acceptedAfterClientUpdate": 0,
+    "applied": 5,
+    "change": "Expiry and version",
+    "details": [
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "hotel-checkin",
+        "offlineAfter": "1/9",
+        "offlineBefore": "1/9"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "hotel-checkout",
+        "offlineAfter": "0/3",
+        "offlineBefore": "0/3"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "transit-ticket",
+        "offlineAfter": "1/6",
+        "offlineBefore": "1/6"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "transit-inspection",
+        "offlineAfter": "3/3",
+        "offlineBefore": "3/3"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "student-status",
+        "offlineAfter": "4/4",
+        "offlineBefore": "4/4"
+      }
+    ],
+    "key": "expiry",
+    "offlineChanged": 0,
+    "packageOnly": 5
+  },
+  {
+    "acceptedAfterClientUpdate": 0,
+    "applied": 5,
+    "change": "Reorder existing steps",
+    "details": [
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "hotel-checkin",
+        "offlineAfter": "0/9",
+        "offlineBefore": "1/9"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "hotel-checkout",
+        "offlineAfter": "0/3",
+        "offlineBefore": "0/3"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "transit-ticket",
+        "offlineAfter": "0/6",
+        "offlineBefore": "1/6"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "transit-inspection",
+        "offlineAfter": "3/3",
+        "offlineBefore": "3/3"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "student-status",
+        "offlineAfter": "4/4",
+        "offlineBefore": "4/4"
+      }
+    ],
+    "key": "reorder",
+    "offlineChanged": 2,
+    "packageOnly": 5
+  },
+  {
+    "acceptedAfterClientUpdate": 0,
+    "applied": 5,
+    "change": "Insert an existing local step",
+    "details": [
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "hotel-checkin",
+        "offlineAfter": "1/9",
+        "offlineBefore": "1/9"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "hotel-checkout",
+        "offlineAfter": "0/3",
+        "offlineBefore": "0/3"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "transit-ticket",
+        "offlineAfter": "1/6",
+        "offlineBefore": "1/6"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "transit-inspection",
+        "offlineAfter": "3/3",
+        "offlineBefore": "3/3"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "student-status",
+        "offlineAfter": "4/4",
+        "offlineBefore": "4/4"
+      }
+    ],
+    "key": "insert",
+    "offlineChanged": 0,
+    "packageOnly": 5
+  },
+  {
+    "acceptedAfterClientUpdate": 0,
+    "applied": 1,
+    "change": "Remove the city-tax module",
+    "details": [
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "hotel-checkin",
+        "offlineAfter": "1/6",
+        "offlineBefore": "1/9"
+      }
+    ],
+    "key": "module",
+    "offlineChanged": 0,
+    "packageOnly": 1
+  },
+  {
+    "acceptedAfterClientUpdate": 0,
+    "applied": 2,
+    "change": "Proximity to remote presentation",
+    "details": [
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "transit-inspection",
+        "offlineAfter": "1/4",
+        "offlineBefore": "3/3"
+      },
+      {
+        "accepted": true,
+        "code": "ACCEPTED",
+        "model": "student-status",
+        "offlineAfter": "2/5",
+        "offlineBefore": "4/4"
+      }
+    ],
+    "key": "remote",
+    "offlineChanged": 2,
+    "packageOnly": 2
+  },
+  {
+    "acceptedAfterClientUpdate": 5,
+    "applied": 5,
+    "change": "New device capability",
+    "details": [
+      {
+        "accepted": false,
+        "code": "E_UNKNOWN_ACTION",
+        "model": "hotel-checkin",
+        "offlineAfter": null,
+        "offlineBefore": "1/9"
+      },
+      {
+        "accepted": false,
+        "code": "E_UNKNOWN_ACTION",
+        "model": "hotel-checkout",
+        "offlineAfter": null,
+        "offlineBefore": "0/3"
+      },
+      {
+        "accepted": false,
+        "code": "E_UNKNOWN_ACTION",
+        "model": "transit-ticket",
+        "offlineAfter": null,
+        "offlineBefore": "1/6"
+      },
+      {
+        "accepted": false,
+        "code": "E_UNKNOWN_ACTION",
+        "model": "transit-inspection",
+        "offlineAfter": null,
+        "offlineBefore": "3/3"
+      },
+      {
+        "accepted": false,
+        "code": "E_UNKNOWN_ACTION",
+        "model": "student-status",
+        "offlineAfter": null,
+        "offlineBefore": "4/4"
+      }
+    ],
+    "key": "capability",
+    "offlineChanged": 0,
+    "packageOnly": 0
+  }
+]

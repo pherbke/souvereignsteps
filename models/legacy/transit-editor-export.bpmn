@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_Transit" targetNamespace="urn:example:legacy:transit">
+  <message id="Message_Inspector" name="INSPECTOR_TRIGGER" />
+  <message id="Message_Revocation" name="REVOCATION_SIGNAL" />
+  <message id="Msg_Revoke" name="RevocationSignal" />
+  <signal id="Sig_NFC" name="InspektorNFC_BLE_Trigger" />
+  <process id="Process_TransitEdge" name="Transit – Edge Execution (Wallet-Perspektive)" isExecutable="false">
+    <startEvent id="Start_Timer" name="Monatsanfang (z.B. 1. des Monats)">
+      <timerEventDefinition>
+        <timeCycle xsi:type="tFormalExpression">R/P1M</timeCycle>
+      </timerEventDefinition>
+    </startEvent>
+    <task id="T_CheckVC" name="Wallet prueft Vorhandensein des Mitarbeiter VC">
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="VERIFY_LOCAL_CREDENTIAL" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+    <task id="T_Order" name="Wallet triggert ticket-order-flow.json">
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="TRIGGER_WORKFLOW" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+    <exclusiveGateway id="EG_CheckTicket" name="Ticket vorhanden?" />
+    <task id="T_MissingTicketFail" name="Fehler: Neues Ticket nicht gefunden - Kundenservice kontaktieren">
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="USER_NOTIFICATION" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+    <endEvent id="End_MissingTicket" name="Abbruch" />
+    <task id="T_PresentEmp" name="Wallet praesentiert Mitarbeiter VC an Endpoint" >
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="PRESENT_CREDENTIAL" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+    <task id="T_StoreTicket" name="Wallet empfaengt und speichert Transit Ticket VC lokal" >
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="REQUEST_VC" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+    <exclusiveGateway id="EG_LoopEntry" name="Bereit fuer naechste Kontrolle" />
+    <intermediateCatchEvent id="ICE_NFC" name="Wallet empfaengt NFC/BLE-Trigger von Inspektor">
+      <messageEventDefinition messageRef="Message_Inspector" />
+    </intermediateCatchEvent>
+    <task id="T_Verify" name="Wallet verifiziert Ticket gegen lokalen Cache (offline)" >
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="VERIFY_LOCAL_CREDENTIAL" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+    <task id="T_Proof" name="Wallet praesentiert kryptografischen Proof an Inspektor-Geraet" >
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="PRESENT_CREDENTIAL" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+    <exclusiveGateway id="EG_Result" name="Proof akzeptiert?" />
+    <task id="T_Confirmed" name="Wallet protokolliert: Kontrolle erfolgreich" />
+    <task id="T_Failed" name="Wallet protokolliert: Kontrolle fehlgeschlagen" />
+    <exclusiveGateway id="EG_LoopMerge" />
+    <subProcess id="ESP_Revoke" name="Asynchrone Revocation (jederzeit bei Netzwerkverbindung)" triggeredByEvent="true">
+      <startEvent id="Start_Revoke" name="Wallet empfaengt Revocation-Signal bei Netzwerkverbindung">
+        <messageEventDefinition messageRef="Message_Revocation" />
+      </startEvent>
+      <task id="T_Invalidate" name="Wallet setzt Ticket-Status auf invalid" >
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="REVOKE_CREDENTIAL" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+      <task id="T_ClearCache" name="Wallet loescht Ticket aus lokalem Cache" >
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="REVOKE_CREDENTIAL" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+      <endEvent id="End_Revoke" name="Ticket widerrufen – Prozess final beendet" />
+      <sequenceFlow id="FR_1" sourceRef="Start_Revoke" targetRef="T_Invalidate" />
+      <sequenceFlow id="FR_2" sourceRef="T_Invalidate" targetRef="T_ClearCache" />
+      <sequenceFlow id="FR_3" sourceRef="T_ClearCache" targetRef="End_Revoke" />
+    </subProcess>
+    <subProcess id="ESP_Expiry" name="Ticket abgelaufen (Monatsende)" triggeredByEvent="true">
+      <startEvent id="Start_Expiry" name="Ticket abgelaufen (Monatsende)">
+        <timerEventDefinition>
+          <timeCycle xsi:type="tFormalExpression">R/P1M</timeCycle>
+        </timerEventDefinition>
+      </startEvent>
+      <task id="T_Archive" name="Wallet archiviert Ticket und beendet aktuellen Lifecycle" >
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="REVOKE_CREDENTIAL" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+      <endEvent id="End_Expiry" name="Lifecycle beendet" />
+      <sequenceFlow id="FE_1" sourceRef="Start_Expiry" targetRef="T_Archive" />
+      <sequenceFlow id="FE_2" sourceRef="T_Archive" targetRef="End_Expiry" />
+    </subProcess>
+    <sequenceFlow id="F_00" sourceRef="Start_Timer" targetRef="T_Order" />
+    <sequenceFlow id="F_01" sourceRef="T_Order" targetRef="T_CheckVC" />
+    <sequenceFlow id="F_02" sourceRef="T_CheckVC" targetRef="EG_CheckTicket" />
+    <sequenceFlow id="F_02_ja" name="Ja" sourceRef="EG_CheckTicket" targetRef="T_PresentEmp" />
+    <sequenceFlow id="F_02_nein" name="Nein" sourceRef="EG_CheckTicket" targetRef="T_MissingTicketFail" />
+    <sequenceFlow id="F_02_end" sourceRef="T_MissingTicketFail" targetRef="End_MissingTicket" />
+    <sequenceFlow id="F_03" sourceRef="T_PresentEmp" targetRef="T_StoreTicket" />
+    <sequenceFlow id="F_04" sourceRef="T_StoreTicket" targetRef="EG_LoopEntry" />
+    <sequenceFlow id="F_05" sourceRef="EG_LoopEntry" targetRef="ICE_NFC" />
+    <sequenceFlow id="F_06" sourceRef="ICE_NFC" targetRef="T_Verify" />
+    <sequenceFlow id="F_07" sourceRef="T_Verify" targetRef="T_Proof" />
+    <sequenceFlow id="F_08" sourceRef="T_Proof" targetRef="EG_Result" />
+    <sequenceFlow id="F_09" name="Ja (Proof akzeptiert)" sourceRef="EG_Result" targetRef="T_Confirmed" />
+    <sequenceFlow id="F_10" name="Nein (Proof abgelehnt)" sourceRef="EG_Result" targetRef="T_Failed" />
+    <sequenceFlow id="F_11" sourceRef="T_Confirmed" targetRef="EG_LoopMerge" />
+    <sequenceFlow id="F_12" sourceRef="T_Failed" targetRef="EG_LoopMerge" />
+    <sequenceFlow id="F_13" name="Loop: Bereit fuer naechste Kontrolle" sourceRef="EG_LoopMerge" targetRef="EG_LoopEntry" />
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_TransitEdge">
+      <bpmndi:BPMNShape id="S_T_PresentEmp" bpmnElement="T_PresentEmp">
+        <dc:Bounds x="680" y="230" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_StoreTicket" bpmnElement="T_StoreTicket">
+        <dc:Bounds x="890" y="230" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_EG_LoopEntry" bpmnElement="EG_LoopEntry" isMarkerVisible="true">
+        <dc:Bounds x="1110" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_ICE_NFC" bpmnElement="ICE_NFC">
+        <dc:Bounds x="1230" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_Verify" bpmnElement="T_Verify">
+        <dc:Bounds x="1330" y="230" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_Proof" bpmnElement="T_Proof">
+        <dc:Bounds x="1540" y="230" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_EG_Result" bpmnElement="EG_Result" isMarkerVisible="true">
+        <dc:Bounds x="1760" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_Confirmed" bpmnElement="T_Confirmed">
+        <dc:Bounds x="1880" y="130" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_Failed" bpmnElement="T_Failed">
+        <dc:Bounds x="1880" y="340" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_EG_LoopMerge" bpmnElement="EG_LoopMerge" isMarkerVisible="true">
+        <dc:Bounds x="2110" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_EG_CheckTicket" bpmnElement="EG_CheckTicket" isMarkerVisible="true">
+        <dc:Bounds x="525" y="245" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="520.5" y="207.5" width="59" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_MissingTicketFail" bpmnElement="T_MissingTicketFail">
+        <dc:Bounds x="470" y="340" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_End_MissingTicket" bpmnElement="End_MissingTicket">
+        <dc:Bounds x="532" y="460" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="530" y="496" width="41" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_CheckVC" bpmnElement="T_CheckVC">
+        <dc:Bounds x="322" y="230" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_Order" bpmnElement="T_Order">
+        <dc:Bounds x="112" y="230" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Start_Timer" bpmnElement="Start_Timer">
+        <dc:Bounds x="12" y="252" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="-5" y="288" width="70" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_ESP_Revoke" bpmnElement="ESP_Revoke" isExpanded="true">
+        <dc:Bounds x="165" y="560" width="660" height="150" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Start_Revoke" bpmnElement="Start_Revoke">
+        <dc:Bounds x="197" y="617" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="170" y="653" width="90" height="66" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_Invalidate" bpmnElement="T_Invalidate">
+        <dc:Bounds x="295" y="595" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_ClearCache" bpmnElement="T_ClearCache">
+        <dc:Bounds x="515" y="595" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_End_Revoke" bpmnElement="End_Revoke">
+        <dc:Bounds x="765" y="617" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="741" y="653" width="84" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="E_FR_1" bpmnElement="FR_1">
+        <di:waypoint x="233" y="635" />
+        <di:waypoint x="295" y="635" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_FR_2" bpmnElement="FR_2">
+        <di:waypoint x="455" y="635" />
+        <di:waypoint x="515" y="635" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_FR_3" bpmnElement="FR_3">
+        <di:waypoint x="675" y="635" />
+        <di:waypoint x="765" y="635" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="S_ESP_Expiry" bpmnElement="ESP_Expiry" isExpanded="true">
+        <dc:Bounds x="885" y="560" width="500" height="150" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Start_Expiry" bpmnElement="Start_Expiry">
+        <dc:Bounds x="917" y="617" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="892" y="653" width="87" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_Archive" bpmnElement="T_Archive">
+        <dc:Bounds x="1015" y="595" width="200" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_End_Expiry" bpmnElement="End_Expiry">
+        <dc:Bounds x="1337" y="617" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1312" y="653" width="86" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="E_FE_1" bpmnElement="FE_1">
+        <di:waypoint x="953" y="635" />
+        <di:waypoint x="1015" y="635" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_FE_2" bpmnElement="FE_2">
+        <di:waypoint x="1215" y="635" />
+        <di:waypoint x="1337" y="635" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_02" bpmnElement="F_02">
+        <di:waypoint x="482" y="270" />
+        <di:waypoint x="525" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_02_ja" bpmnElement="F_02_ja">
+        <di:waypoint x="575" y="270" />
+        <di:waypoint x="680" y="270" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="624" y="278" width="12" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_02_nein" bpmnElement="F_02_nein">
+        <di:waypoint x="550" y="295" />
+        <di:waypoint x="550" y="340" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="554" y="306" width="23" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_03" bpmnElement="F_03">
+        <di:waypoint x="840" y="270" />
+        <di:waypoint x="890" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_04" bpmnElement="F_04">
+        <di:waypoint x="1050" y="270" />
+        <di:waypoint x="1110" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_05" bpmnElement="F_05">
+        <di:waypoint x="1160" y="270" />
+        <di:waypoint x="1230" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_06" bpmnElement="F_06">
+        <di:waypoint x="1266" y="270" />
+        <di:waypoint x="1330" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_07" bpmnElement="F_07">
+        <di:waypoint x="1490" y="270" />
+        <di:waypoint x="1540" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_08" bpmnElement="F_08">
+        <di:waypoint x="1700" y="270" />
+        <di:waypoint x="1760" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_09" bpmnElement="F_09">
+        <di:waypoint x="1785" y="245" />
+        <di:waypoint x="1785" y="170" />
+        <di:waypoint x="1880" y="170" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_10" bpmnElement="F_10">
+        <di:waypoint x="1785" y="295" />
+        <di:waypoint x="1785" y="380" />
+        <di:waypoint x="1880" y="380" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_11" bpmnElement="F_11">
+        <di:waypoint x="2040" y="170" />
+        <di:waypoint x="2135" y="170" />
+        <di:waypoint x="2135" y="245" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_12" bpmnElement="F_12">
+        <di:waypoint x="2040" y="380" />
+        <di:waypoint x="2135" y="380" />
+        <di:waypoint x="2135" y="295" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_13" bpmnElement="F_13">
+        <di:waypoint x="2135" y="295" />
+        <di:waypoint x="2135" y="450" />
+        <di:waypoint x="1135" y="450" />
+        <di:waypoint x="1135" y="295" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_02_end" bpmnElement="F_02_end">
+        <di:waypoint x="550" y="420" />
+        <di:waypoint x="550" y="460" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_01" bpmnElement="F_01">
+        <di:waypoint x="272" y="270" />
+        <di:waypoint x="322" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_00" bpmnElement="F_00">
+        <di:waypoint x="48" y="270" />
+        <di:waypoint x="112" y="270" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

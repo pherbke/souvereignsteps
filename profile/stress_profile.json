@@ -1,0 +1,318 @@
+{
+  "clock": "2026-10-01T12:00:00Z",
+  "handlers": {
+    "ACTIVATE_REMOTE_CONTROL": {
+      "locality": "local",
+      "outcomes": [
+        "success",
+        "failure"
+      ],
+      "params": {
+        "permissions": {
+          "required": true,
+          "type": "list"
+        },
+        "roomId": {
+          "required": false,
+          "type": "string"
+        }
+      }
+    },
+    "LOG_EVENT": {
+      "locality": "local",
+      "outcomes": [
+        "success"
+      ],
+      "params": {
+        "eventMessage": {
+          "required": true,
+          "type": "string"
+        },
+        "status": {
+          "required": false,
+          "type": "enum",
+          "values": [
+            "SUCCESS",
+            "FAILURE"
+          ]
+        }
+      }
+    },
+    "MANAGE_CREDENTIAL": {
+      "locality": "local",
+      "outcomes": [
+        "success",
+        "failure"
+      ],
+      "params": {
+        "action": {
+          "required": true,
+          "type": "enum",
+          "values": [
+            "ARCHIVE",
+            "CLEAR"
+          ]
+        },
+        "credentialType": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "PRESENT_CREDENTIAL": {
+      "locality": {
+        "byParam": "channel",
+        "map": {
+          "proximity": "local",
+          "remote": "network"
+        }
+      },
+      "outcomes": [
+        "success",
+        "failure",
+        "offline"
+      ],
+      "params": {
+        "channel": {
+          "required": true,
+          "type": "enum",
+          "values": [
+            "proximity",
+            "remote"
+          ]
+        },
+        "claims": {
+          "disclosure": true,
+          "required": true,
+          "type": "list"
+        },
+        "endpointUrl": {
+          "requiredIf": {
+            "channel": "remote"
+          },
+          "type": "endpoint"
+        },
+        "presentationRequest": {
+          "required": true,
+          "type": "list"
+        },
+        "targetDevice": {
+          "requiredIf": {
+            "channel": "proximity"
+          },
+          "type": "enum",
+          "values": [
+            "NFC",
+            "BLE",
+            "QR"
+          ]
+        }
+      }
+    },
+    "PROCESS_PAYMENT": {
+      "locality": "network",
+      "outcomes": [
+        "success",
+        "failure",
+        "offline"
+      ],
+      "params": {
+        "amount": {
+          "required": true,
+          "type": "decimal"
+        },
+        "currency": {
+          "required": true,
+          "type": "enum",
+          "values": [
+            "EUR",
+            "USD"
+          ]
+        },
+        "merchantId": {
+          "required": true,
+          "type": "string"
+        },
+        "paymentEndpointUrl": {
+          "required": true,
+          "type": "endpoint"
+        }
+      }
+    },
+    "REQUEST_USER_INPUT": {
+      "locality": "local",
+      "outcomes": [
+        "success",
+        "failure"
+      ],
+      "params": {
+        "formType": {
+          "required": true,
+          "type": "enum",
+          "values": [
+            "CONSENT",
+            "PAYMENT",
+            "CONFIRM"
+          ]
+        },
+        "promptMessage": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "REQUEST_VC": {
+      "locality": "network",
+      "outcomes": [
+        "success",
+        "failure",
+        "offline"
+      ],
+      "params": {
+        "credentialEndpointUrl": {
+          "required": true,
+          "type": "endpoint"
+        },
+        "credentialType": {
+          "required": true,
+          "type": "string"
+        },
+        "issuerId": {
+          "required": false,
+          "type": "string"
+        }
+      }
+    },
+    "REVOKE_CREDENTIAL": {
+      "locality": "network",
+      "outcomes": [
+        "success",
+        "failure",
+        "offline"
+      ],
+      "params": {
+        "credentialType": {
+          "required": true,
+          "type": "string"
+        },
+        "endpointUrl": {
+          "required": true,
+          "type": "endpoint"
+        }
+      }
+    },
+    "USER_NOTIFICATION": {
+      "locality": "local",
+      "outcomes": [
+        "success"
+      ],
+      "params": {
+        "alertType": {
+          "required": false,
+          "type": "enum",
+          "values": [
+            "INFO",
+            "WARNING",
+            "ERROR"
+          ]
+        },
+        "message": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    },
+    "VERIFY_LOCAL_CREDENTIAL": {
+      "locality": "local",
+      "outcomes": [
+        "success",
+        "failure"
+      ],
+      "params": {
+        "cacheOnly": {
+          "required": false,
+          "type": "enum",
+          "values": [
+            "true",
+            "false"
+          ]
+        },
+        "credentialType": {
+          "required": true,
+          "type": "string"
+        }
+      }
+    }
+  },
+  "limits": {
+    "maxListLength": 32,
+    "maxPackageBytes": 50000000,
+    "maxStates": 100000,
+    "maxStringLength": 512
+  },
+  "profile": "reference-wallet-2026.1",
+  "publishers": {
+    "hotel-2026": {
+      "handlers": [
+        "VERIFY_LOCAL_CREDENTIAL",
+        "USER_NOTIFICATION",
+        "REQUEST_USER_INPUT",
+        "LOG_EVENT",
+        "ACTIVATE_REMOTE_CONTROL",
+        "MANAGE_CREDENTIAL",
+        "PRESENT_CREDENTIAL",
+        "REQUEST_VC",
+        "PROCESS_PAYMENT"
+      ],
+      "namespaces": [
+        "com.example.hotel."
+      ],
+      "origins": [
+        "https://checkin.hotel.example",
+        "https://checkout.hotel.example",
+        "https://keys.hotel.example",
+        "https://pay.hotel.example"
+      ],
+      "publicKey": "287cb50fefa71b43dba2c4769f2230bdf79dfc30b75d1486d8466f15c8e035aa"
+    },
+    "transit-2026": {
+      "handlers": [
+        "VERIFY_LOCAL_CREDENTIAL",
+        "USER_NOTIFICATION",
+        "LOG_EVENT",
+        "PRESENT_CREDENTIAL",
+        "REQUEST_VC"
+      ],
+      "namespaces": [
+        "org.example.transit."
+      ],
+      "origins": [
+        "https://tickets.transit.example"
+      ],
+      "publicKey": "b237cb7d5842fc5398eef8ea1fac68ace456141d8d49c91d728fd394da6d5094"
+    },
+    "univ-2026": {
+      "handlers": [
+        "VERIFY_LOCAL_CREDENTIAL",
+        "USER_NOTIFICATION",
+        "REQUEST_USER_INPUT",
+        "LOG_EVENT",
+        "PRESENT_CREDENTIAL"
+      ],
+      "namespaces": [
+        "edu.example.univ."
+      ],
+      "origins": [
+        "https://verify.univ.example"
+      ],
+      "publicKey": "66285455c184b2fce13b7558944281e93483e0cd276a1e17a8d7bf7498b6deb2"
+    }
+  },
+  "schemas": [
+    "glovebox/1"
+  ],
+  "versionFloors": {
+    "com.example.hotel.checkin": 2,
+    "org.example.transit.inspection": 2
+  }
+}

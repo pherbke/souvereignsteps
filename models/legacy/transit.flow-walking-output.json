@@ -1,0 +1,136 @@
+{
+  "id": "Process_TransitEdge",
+  "initial": "T_Order",
+  "context": {},
+  "states": {
+    "T_Order": {
+      "description": "Wallet triggert ticket-order-flow.json",
+      "always": {
+        "target": "T_CheckVC"
+      }
+    },
+    "T_CheckVC": {
+      "description": "Wallet prueft Vorhandensein des Mitarbeiter VC",
+      "entry": {
+        "type": "verifyLocalCredential",
+        "params": {}
+      },
+      "on": {
+        "verifyLocalCredential.success": {
+          "target": "T_PresentEmp"
+        },
+        "verifyLocalCredential.failure": {
+          "target": "T_MissingTicketFail"
+        }
+      }
+    },
+    "T_PresentEmp": {
+      "description": "Wallet praesentiert Mitarbeiter VC an Endpoint",
+      "entry": {
+        "type": "presentVC",
+        "params": {}
+      },
+      "on": {
+        "presentVC.success": {
+          "target": "T_StoreTicket"
+        },
+        "presentVC.failure": {
+          "target": "FAIL_STATE"
+        }
+      }
+    },
+    "T_MissingTicketFail": {
+      "description": "Fehler: Neues Ticket nicht gefunden - Kundenservice kontaktieren",
+      "entry": {
+        "type": "notifyUser",
+        "params": {}
+      },
+      "always": {
+        "target": "End_MissingTicket"
+      }
+    },
+    "T_StoreTicket": {
+      "description": "Wallet empfaengt und speichert Transit Ticket VC lokal",
+      "entry": {
+        "type": "requestVC",
+        "params": {}
+      },
+      "on": {
+        "requestVC.success": {
+          "target": "EG_LoopEntry"
+        },
+        "requestVC.failure": {
+          "target": "FAIL_STATE"
+        }
+      }
+    },
+    "End_MissingTicket": {
+      "description": "Abbruch",
+      "type": "final"
+    },
+    "EG_LoopEntry": {
+      "description": "Bereit fuer naechste Kontrolle",
+      "always": {
+        "target": "ICE_NFC"
+      }
+    },
+    "ICE_NFC": {
+      "description": "Wallet empfaengt NFC/BLE-Trigger von Inspektor",
+      "always": {
+        "target": "T_Verify"
+      }
+    },
+    "T_Verify": {
+      "description": "Wallet verifiziert Ticket gegen lokalen Cache (offline)",
+      "entry": {
+        "type": "verifyLocalCredential",
+        "params": {}
+      },
+      "on": {
+        "verifyLocalCredential.success": {
+          "target": "T_Proof"
+        },
+        "verifyLocalCredential.failure": {
+          "target": "FAIL_STATE"
+        }
+      }
+    },
+    "T_Proof": {
+      "description": "Wallet praesentiert kryptografischen Proof an Inspektor-Geraet",
+      "entry": {
+        "type": "presentVC",
+        "params": {}
+      },
+      "on": {
+        "presentVC.success": {
+          "target": "T_Confirmed"
+        },
+        "presentVC.failure": {
+          "target": "T_Failed"
+        }
+      }
+    },
+    "T_Confirmed": {
+      "description": "Wallet protokolliert: Kontrolle erfolgreich",
+      "always": {
+        "target": "EG_LoopMerge"
+      }
+    },
+    "T_Failed": {
+      "description": "Wallet protokolliert: Kontrolle fehlgeschlagen",
+      "always": {
+        "target": "EG_LoopMerge"
+      }
+    },
+    "EG_LoopMerge": {
+      "description": "",
+      "always": {
+        "target": "EG_LoopEntry"
+      }
+    },
+    "FAIL_STATE": {
+      "description": "Process failed.",
+      "type": "final"
+    }
+  }
+}

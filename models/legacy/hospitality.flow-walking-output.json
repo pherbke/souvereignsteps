@@ -1,0 +1,243 @@
+{
+  "id": "Process_Hospitality",
+  "initial": "T_LoadFlow",
+  "context": {
+    "credentialType": "ReservationVC",
+    "cacheOnly": true,
+    "message": "Keine Reservierung gefunden. Bitte wenden Sie sich an die Rezeption.",
+    "alertType": "WARNING",
+    "flowId": "check-in-flow.json",
+    "presentationRequest": [
+      "IdentityVC",
+      "ReservationVC"
+    ],
+    "endpointUrl": "https://api.hotel.local/checkin",
+    "formType": "PAYMENT",
+    "promptMessage": "Bitte bestaetigen Sie die City Tax Zahlung (5,00 EUR)",
+    "resultKey": "context.cityTaxApproved",
+    "amount": 5.0,
+    "currency": "EUR",
+    "paymentIntentId": "context.paymentIntentId",
+    "merchantId": "did:web:hotel.com",
+    "T_PaymentresultKey": "context.paymentSuccess",
+    "T_Fallbackmessage": "Automatischer Check-in abgebrochen. Bitte wenden Sie sich an die Rezeption.",
+    "T_FallbackalertType": "WARNING",
+    "T_ReceiveKeycredentialType": "DigitalRoomKeyVC",
+    "issuerId": "did:web:hotel.com",
+    "credentialEndpointUrl": "https://api.hotel.local/issue/roomkey",
+    "roomId": "context.roomId",
+    "permissions": [
+      "UNLOCK_DOOR",
+      "ELEVATOR"
+    ],
+    "credentialId": "context.roomKeyId",
+    "action": "REVOKE",
+    "T_RevokeendpointUrl": "https://api.hotel.local/revoke",
+    "T_Abortmessage": "Check-in fehlgeschlagen. Bitte wenden Sie sich an die Rezeption.",
+    "T_AbortalertType": "ERROR",
+    "DynamischeLogikCityTaxInjiziert": true
+  },
+  "states": {
+    "T_LoadFlow": {
+      "description": "Wallet laedt check-in-flow.json und startet State Machine",
+      "always": {
+        "target": "T_CheckResVC"
+      }
+    },
+    "T_CheckResVC": {
+      "description": "Wallet prueft Vorhandensein des Reservierungs-VCs",
+      "entry": {
+        "type": "verifyLocalCredential",
+        "params": {
+          "credentialType": "context.credentialType",
+          "cacheOnly": "context.cacheOnly"
+        }
+      },
+      "on": {
+        "verifyLocalCredential.success": {
+          "target": "T_PresentVC"
+        },
+        "verifyLocalCredential.failure": {
+          "target": "T_NoRes"
+        }
+      }
+    },
+    "T_NoRes": {
+      "description": "Fehler: Keine Reservierung - Bitte an Rezeption wenden",
+      "entry": {
+        "type": "notifyUser",
+        "params": {
+          "message": "context.message",
+          "alertType": "context.alertType"
+        }
+      },
+      "always": {
+        "target": "End_NoRes"
+      }
+    },
+    "T_PresentVC": {
+      "description": "Wallet praesentiert Identity VC und Reservation VC an Terminal",
+      "entry": {
+        "type": "presentVC",
+        "params": {
+          "presentationRequest": "context.presentationRequest",
+          "endpointUrl": "context.endpointUrl"
+        }
+      },
+      "on": {
+        "presentVC.success": {
+          "target": "EG_Dynamic"
+        },
+        "presentVC.failure": {
+          "target": "FAIL_STATE"
+        }
+      }
+    },
+    "End_NoRes": {
+      "description": "Abbruch",
+      "type": "final"
+    },
+    "EG_Dynamic": {
+      "description": "Dynamische Logik: City Tax injiziert?",
+      "always": [
+        {
+          "guard": "context.DynamischeLogikCityTaxInjiziert",
+          "target": "T_CityTax"
+        },
+        {
+          "target": "EG_DynMerge"
+        }
+      ]
+    },
+    "T_CityTax": {
+      "description": "Check-in pausiert \u2013 Wallet fordert City Tax Zahlung an",
+      "entry": {
+        "type": "requestUserInput",
+        "params": {
+          "formType": "context.formType",
+          "promptMessage": "context.promptMessage",
+          "resultKey": "context.resultKey"
+        }
+      },
+      "always": {
+        "target": "T_Payment"
+      }
+    },
+    "EG_DynMerge": {
+      "description": "",
+      "always": {
+        "target": "T_ReceiveKey"
+      }
+    },
+    "T_Payment": {
+      "description": "Wallet verarbeitet City Tax Zahlung",
+      "entry": {
+        "type": "processPayment",
+        "params": {
+          "amount": "context.amount",
+          "currency": "context.currency",
+          "paymentIntentId": "context.paymentIntentId",
+          "merchantId": "context.merchantId",
+          "resultKey": "context.T_PaymentresultKey"
+        }
+      },
+      "on": {
+        "processPayment.success": {
+          "target": "EG_DynMerge"
+        },
+        "processPayment.failure": {
+          "target": "T_Fallback"
+        }
+      }
+    },
+    "T_ReceiveKey": {
+      "description": "Wallet empfaengt Digital Room Key VC von Hotel-API",
+      "entry": {
+        "type": "requestVC",
+        "params": {
+          "credentialType": "context.T_ReceiveKeycredentialType",
+          "issuerId": "context.issuerId",
+          "credentialEndpointUrl": "context.credentialEndpointUrl"
+        }
+      },
+      "on": {
+        "requestVC.success": {
+          "target": "T_RemoteCtrl"
+        },
+        "requestVC.failure": {
+          "target": "FAIL_STATE"
+        }
+      }
+    },
+    "T_Fallback": {
+      "description": "Manueller Fallback: Wallet verweist Gast an die Rezeption",
+      "entry": {
+        "type": "notifyUser",
+        "params": {
+          "message": "context.T_Fallbackmessage",
+          "alertType": "context.T_FallbackalertType"
+        }
+      },
+      "always": {
+        "target": "End_ModuleFail"
+      }
+    },
+    "T_RemoteCtrl": {
+      "description": "Wallet aktiv im Remote-Control-Modus (In-Stay)",
+      "entry": {
+        "type": "activateRemoteControl",
+        "params": {
+          "roomId": "context.roomId",
+          "permissions": "context.permissions"
+        }
+      },
+      "after": {
+        "86400000": {
+          "target": "EG_CheckoutMerge"
+        }
+      },
+      "on": {
+        "Message_Checkout": {
+          "target": "EG_CheckoutMerge"
+        }
+      }
+    },
+    "End_ModuleFail": {
+      "description": "Automatischer Check-in abgebrochen",
+      "type": "final"
+    },
+    "EG_CheckoutMerge": {
+      "description": "",
+      "always": {
+        "target": "T_Revoke"
+      }
+    },
+    "T_Revoke": {
+      "description": "Room Key VC wird automatisch und sofort widerrufen (Revocation)",
+      "entry": {
+        "type": "revokeCredential",
+        "params": {
+          "credentialId": "context.credentialId",
+          "action": "context.action",
+          "endpointUrl": "context.T_RevokeendpointUrl"
+        }
+      },
+      "on": {
+        "revokeCredential.success": {
+          "target": "End_OK"
+        },
+        "revokeCredential.failure": {
+          "target": "FAIL_STATE"
+        }
+      }
+    },
+    "End_OK": {
+      "description": "Check-Out abgeschlossen",
+      "type": "final"
+    },
+    "FAIL_STATE": {
+      "description": "Process failed.",
+      "type": "final"
+    }
+  }
+}

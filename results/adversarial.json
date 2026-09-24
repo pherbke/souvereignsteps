@@ -1,0 +1,225 @@
+[
+  {
+    "asIntended": true,
+    "case": "payload modified after signing",
+    "expected": "E_SIG_INVALID",
+    "group": "Authenticity",
+    "id": "A1",
+    "observed": "E_SIG_INVALID",
+    "preinstall": [],
+    "requirement": "R1"
+  },
+  {
+    "asIntended": true,
+    "case": "signed with an untrusted key",
+    "expected": "E_UNKNOWN_KEY",
+    "group": "Authenticity",
+    "id": "A2",
+    "observed": "E_UNKNOWN_KEY",
+    "preinstall": [],
+    "requirement": "R1"
+  },
+  {
+    "asIntended": true,
+    "case": "trusted key id, forged signature",
+    "expected": "E_SIG_INVALID",
+    "group": "Authenticity",
+    "id": "A3",
+    "observed": "E_SIG_INVALID",
+    "preinstall": [],
+    "requirement": "R1"
+  },
+  {
+    "asIntended": true,
+    "case": "signature stripped",
+    "expected": "E_SIG_MISSING",
+    "group": "Authenticity",
+    "id": "A4",
+    "observed": "E_SIG_MISSING",
+    "preinstall": [],
+    "requirement": "R1"
+  },
+  {
+    "asIntended": true,
+    "case": "trusted publisher signs a foreign namespace",
+    "expected": "E_NAMESPACE",
+    "group": "Authenticity",
+    "id": "A5",
+    "observed": "E_NAMESPACE",
+    "preinstall": [],
+    "requirement": "R1"
+  },
+  {
+    "asIntended": true,
+    "case": "unsupported schema version",
+    "expected": "E_SCHEMA",
+    "group": "Lifecycle",
+    "id": "L1",
+    "observed": "E_SCHEMA",
+    "preinstall": [],
+    "requirement": "R5"
+  },
+  {
+    "asIntended": true,
+    "case": "expired package",
+    "expected": "E_EXPIRED",
+    "group": "Lifecycle",
+    "id": "L2",
+    "observed": "E_EXPIRED",
+    "preinstall": [],
+    "requirement": "R5"
+  },
+  {
+    "asIntended": true,
+    "case": "replayed version below the floor",
+    "expected": "E_ROLLBACK",
+    "group": "Lifecycle",
+    "id": "L3",
+    "observed": "E_ROLLBACK",
+    "preinstall": [],
+    "requirement": "R5"
+  },
+  {
+    "asIntended": true,
+    "case": "superseded version after a forced update",
+    "expected": "E_ROLLBACK",
+    "group": "Lifecycle",
+    "id": "L4",
+    "observed": "E_ROLLBACK",
+    "preinstall": [
+      "eyJhbGciOiJFZERTQSIsImtpZCI6ImhvdGVsLTIwMjYiLCJ0eXAiOiJnbG92ZWJveC1wYWNrYWdlK2pzb24ifQ.eyJmbG9vciI6NCwiaWQiOiJjb20uZXhhbXBsZS5ob3RlbC5jaGVja2luIiwiaW5pdGlhbCI6IlZlcmlmeVJlc2VydmF0aW9uIiwibm90QWZ0ZXIiOiIyMDI3LTAxLTMxVDIzOjU5OjU5WiIsInNjaGVtYSI6Imdsb3ZlYm94LzEiLCJzdGF0ZXMiOnsiQWN0aXZhdGVSZW1vdGUiOnsiYWN0aW9uIjp7InBhcmFtcyI6eyJwZXJtaXNzaW9ucyI6WyJVTkxPQ0tfRE9PUiIsIkVMRVZBVE9SIl19LCJ0eXBlIjoiQUNUSVZBVEVfUkVNT1RFX0NPTlRST0wifSwib24iOnsic3VjY2VzcyI6IkVuZENoZWNrZWRJbiJ9fSwiQ29uZmlybUNpdHlUYXgiOnsiYWN0aW9uIjp7InBhcmFtcyI6eyJmb3JtVHlwZSI6IlBBWU1FTlQiLCJwcm9tcHRNZXNzYWdlIjoiUGxlYXNlIGNvbmZpcm0gdGhlIGNpdHkgdGF4IHBheW1lbnQgb2YgNS4wMCBFVVIuIn0sInR5cGUiOiJSRVFVRVNUX1VTRVJfSU5QVVQifSwib24iOnsiZmFpbHVyZSI6Ik5vdGlmeUZhbGxiYWNrIiwic3VjY2VzcyI6IlBheUNpdHlUYXgifX0sIkVuZENoZWNrZWRJbiI6eyJ0ZXJtaW5hbCI6InN1Y2Nlc3MifSwiRW5kRmFsbGJhY2siOnsidGVybWluYWwiOiJkZW55In0sIkVuZE5vUmVzZXJ2YXRpb24iOnsidGVybWluYWwiOiJkZW55In0sIkVuZE9mZmxpbmUiOnsidGVybWluYWwiOiJlcnJvciJ9LCJOb3RpZnlGYWxsYmFjayI6eyJhY3Rpb24iOnsicGFyYW1zIjp7ImFsZXJ0VHlwZSI6IkVSUk9SIiwibWVzc2FnZSI6IkF1dG9tYXRpYyBjaGVjay1pbiBzdG9wcGVkLiBQbGVhc2UgY29udGFjdCB0aGUgcmVjZXB0aW9uLiJ9LCJ0eXBlIjoiVVNFUl9OT1RJRklDQVRJT04ifSwib24iOnsic3VjY2VzcyI6IkVuZEZhbGxiYWNrIn19LCJOb3RpZnlOb1Jlc2VydmF0aW9uIjp7ImFjdGlvbiI6eyJwYXJhbXMiOnsiYWxlcnRUeXBlIjoiV0FSTklORyIsIm1lc3NhZ2UiOiJObyByZXNlcnZhdGlvbiBmb3VuZC4gUGxlYXNlIGNvbnRhY3QgdGhlIHJlY2VwdGlvbi4ifSwidHlwZSI6IlVTRVJfTk9USUZJQ0FUSU9OIn0sIm9uIjp7InN1Y2Nlc3MiOiJFbmROb1Jlc2VydmF0aW9uIn19LCJQYXlDaXR5VGF4Ijp7ImFjdGlvbiI6eyJwYXJhbXMiOnsiYW1vdW50IjoiNS4wMCIsImN1cnJlbmN5IjoiRVVSIiwibWVyY2hhbnRJZCI6ImRpZDp3ZWI6aG90ZWwuZXhhbXBsZSIsInBheW1lbnRFbmRwb2ludFVybCI6Imh0dHBzOi8vcGF5LmhvdGVsLmV4YW1wbGUvdjEvaW50ZW50cyJ9LCJ0eXBlIjoiUFJPQ0VTU19QQVlNRU5UIn0sIm9uIjp7ImZhaWx1cmUiOiJOb3RpZnlGYWxsYmFjayIsIm9mZmxpbmUiOiJFbmRPZmZsaW5lIiwic3VjY2VzcyI6IlJlcXVlc3RSb29tS2V5In19LCJQcmVzZW50Q2hlY2tJbiI6eyJhY3Rpb24iOnsicGFyYW1zIjp7ImNoYW5uZWwiOiJyZW1vdGUiLCJjbGFpbXMiOlsiZ2l2ZW5fbmFtZSIsImZhbWlseV9uYW1lIiwiYmlydGhfZGF0ZSIsIm5hdGlvbmFsaXR5IiwicmVzZXJ2YXRpb25JZCJdLCJlbmRwb2ludFVybCI6Imh0dHBzOi8vY2hlY2tpbi5ob3RlbC5leGFtcGxlL29pZDR2cCIsInByZXNlbnRhdGlvblJlcXVlc3QiOlsiSWRlbnRpdHlWQyIsIlJlc2VydmF0aW9uVkMiXX0sInR5cGUiOiJQUkVTRU5UX0NSRURFTlRJQUwifSwib24iOnsiZmFpbHVyZSI6Ik5vdGlmeUZhbGxiYWNrIiwib2ZmbGluZSI6IkVuZE9mZmxpbmUiLCJzdWNjZXNzIjoiQ29uZmlybUNpdHlUYXgifX0sIlJlcXVlc3RSb29tS2V5Ijp7ImFjdGlvbiI6eyJwYXJhbXMiOnsiY3JlZGVudGlhbEVuZHBvaW50VXJsIjoiaHR0cHM6Ly9rZXlzLmhvdGVsLmV4YW1wbGUvb2lkNHZjaSIsImNyZWRlbnRpYWxUeXBlIjoiRGlnaXRhbFJvb21LZXlWQyIsImlzc3VlcklkIjoiZGlkOndlYjpob3RlbC5leGFtcGxlIn0sInR5cGUiOiJSRVFVRVNUX1ZDIn0sIm9uIjp7ImZhaWx1cmUiOiJOb3RpZnlGYWxsYmFjayIsIm9mZmxpbmUiOiJFbmRPZmZsaW5lIiwic3VjY2VzcyI6IkFjdGl2YXRlUmVtb3RlIn19LCJWZXJpZnlSZXNlcnZhdGlvbiI6eyJhY3Rpb24iOnsicGFyYW1zIjp7ImNhY2hlT25seSI6InRydWUiLCJjcmVkZW50aWFsVHlwZSI6IlJlc2VydmF0aW9uVkMifSwidHlwZSI6IlZFUklGWV9MT0NBTF9DUkVERU5USUFMIn0sIm9uIjp7ImZhaWx1cmUiOiJOb3RpZnlOb1Jlc2VydmF0aW9uIiwic3VjY2VzcyI6IlByZXNlbnRDaGVja0luIn19fSwidmVyc2lvbiI6NH0.o7qNFcxPoCs8-S9QRDgqO5w0rO12lL6wb_7e30wUGFWDDJON9X1mNvkAJNa4EMXEePeeUtL9sl0K3vacmAgtAQ"
+    ],
+    "requirement": "R5"
+  },
+  {
+    "asIntended": true,
+    "case": "duplicate state key (parser differential)",
+    "expected": "E_DUPLICATE_KEY",
+    "group": "Structure",
+    "id": "S1",
+    "lenientParserSees": "USER_NOTIFICATION",
+    "observed": "E_DUPLICATE_KEY",
+    "preinstall": [],
+    "requirement": "R2"
+  },
+  {
+    "asIntended": true,
+    "case": "initial state does not exist",
+    "expected": "E_BAD_INITIAL",
+    "group": "Structure",
+    "id": "S2",
+    "observed": "E_BAD_INITIAL",
+    "preinstall": [],
+    "requirement": "R2"
+  },
+  {
+    "asIntended": true,
+    "case": "dangling transition",
+    "expected": "E_DANGLING",
+    "group": "Structure",
+    "id": "S3",
+    "observed": "E_DANGLING",
+    "preinstall": [],
+    "requirement": "R2"
+  },
+  {
+    "asIntended": true,
+    "case": "unreachable state",
+    "expected": "E_UNREACHABLE",
+    "group": "Structure",
+    "id": "S4",
+    "observed": "E_UNREACHABLE",
+    "preinstall": [],
+    "requirement": "R2"
+  },
+  {
+    "asIntended": true,
+    "case": "retry loop around a payment",
+    "expected": "E_CYCLE",
+    "group": "Structure",
+    "id": "S5",
+    "observed": "E_CYCLE",
+    "preinstall": [],
+    "requirement": "R2"
+  },
+  {
+    "asIntended": true,
+    "case": "transition on an undeclared outcome",
+    "expected": "E_UNDECLARED_OUTCOME",
+    "group": "Typing",
+    "id": "T1",
+    "observed": "E_UNDECLARED_OUTCOME",
+    "preinstall": [],
+    "requirement": "R2"
+  },
+  {
+    "asIntended": true,
+    "case": "missing required parameter",
+    "expected": "E_PARAM",
+    "group": "Typing",
+    "id": "T2",
+    "observed": "E_PARAM",
+    "preinstall": [],
+    "requirement": "R2"
+  },
+  {
+    "asIntended": true,
+    "case": "action type without native handler",
+    "expected": "E_UNKNOWN_ACTION",
+    "group": "Capability",
+    "id": "C1",
+    "observed": "E_UNKNOWN_ACTION",
+    "preinstall": [],
+    "requirement": "R2"
+  },
+  {
+    "asIntended": true,
+    "case": "installed handler outside the publisher's grant",
+    "expected": "E_PUBLISHER_SCOPE",
+    "group": "Capability",
+    "id": "C2",
+    "observed": "E_PUBLISHER_SCOPE",
+    "preinstall": [],
+    "requirement": "R2"
+  },
+  {
+    "asIntended": true,
+    "case": "presentation to an unregistered origin",
+    "expected": "E_ENDPOINT",
+    "group": "Capability",
+    "id": "C3",
+    "observed": "E_ENDPOINT",
+    "preinstall": [],
+    "requirement": "R4"
+  },
+  {
+    "asIntended": true,
+    "case": "empty disclosure request",
+    "expected": "E_EMPTY_DISCLOSURE",
+    "group": "Capability",
+    "id": "C4",
+    "observed": "E_EMPTY_DISCLOSURE",
+    "preinstall": [],
+    "requirement": "R4"
+  },
+  {
+    "asIntended": true,
+    "case": "network step without offline outcome",
+    "expected": "E_OFFLINE_UNMAPPED",
+    "group": "Capability",
+    "id": "C5",
+    "observed": "E_OFFLINE_UNMAPPED",
+    "preinstall": [],
+    "requirement": "R6"
+  },
+  {
+    "asIntended": true,
+    "case": "state-count bound exceeded",
+    "expected": "E_LIMITS",
+    "group": "Capability",
+    "id": "C6",
+    "observed": "E_LIMITS",
+    "preinstall": [],
+    "requirement": "R2"
+  }
+]

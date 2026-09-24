@@ -1,0 +1,25 @@
+hospitality export           nodes=   26 xml=  20985B | prototype    0.78 ms    6712B states=   17 | glovebox rejected (4 diagnostics)
+transit export               nodes=   25 xml=  16833B | prototype    0.56 ms    3230B states=   14 | glovebox rejected (4 diagnostics)
+linear 10 (notification)     nodes=   12 xml=   3983B | prototype    0.20 ms    2837B states=   12 | glovebox   0.14 ms    1237B states=   11 validate=4.0 ms
+linear 100 (notification)    nodes=  102 xml=  31617B | prototype    1.46 ms   26331B states=  102 | glovebox   1.08 ms   11049B states=  101 validate=4.3 ms
+linear 1000 (notification)   nodes= 1002 xml= 311521B | prototype   14.71 ms  264835B states= 1002 | glovebox  12.06 ms  110951B states= 1001 validate=8.0 ms
+linear 1000 (presentation)   nodes= 1002 xml= 486521B | prototype   23.06 ms  669270B states= 1003 | glovebox  19.65 ms  201951B states= 1001 validate=11.2 ms
+linear 1000 (mixed)          nodes= 1002 xml= 355521B | prototype   17.47 ms  407988B states= 1003 | glovebox  14.22 ms  133951B states= 1001 validate=9.0 ms
+tree depth 2                 nodes=   11 xml=   3765B | prototype    0.20 ms    1767B states=    8 | glovebox   0.11 ms     622B states=    7 validate=4.0 ms
+tree depth 5                 nodes=   95 xml=  30369B | prototype    1.27 ms   16006B states=   64 | glovebox   0.83 ms    5014B states=   63 validate=4.2 ms
+tree depth 10                nodes= 3071 xml= 988329B | prototype   48.10 ms  530868B states= 2048 | glovebox  32.84 ms  166750B states= 2047 validate=10.5 ms
+fidelity flow              k=0 prototype=0 glovebox=0
+fidelity flow              k=1 prototype=1 glovebox=1
+fidelity flow              k=2 prototype=2 glovebox=2
+fidelity flow              k=3 prototype=3 glovebox=3
+fidelity flow              k=4 prototype=4 glovebox=4
+fidelity flow              k=5 prototype=5 glovebox=5
+fidelity flow              k=6 prototype=6 glovebox=6
+fidelity event-subprocess  k=0 prototype=0 glovebox=rejected
+fidelity event-subprocess  k=1 prototype=0 glovebox=rejected
+fidelity event-subprocess  k=2 prototype=0 glovebox=rejected
+fidelity event-subprocess  k=3 prototype=0 glovebox=rejected
+fidelity event-subprocess  k=4 prototype=0 glovebox=rejected
+fidelity event-subprocess  k=5 prototype=0 glovebox=rejected
+fidelity event-subprocess  k=6 prototype=0 glovebox=rejected
+CLI end-to-end (ms): {'hospitality export': 115.3, 'linear 1000 (mixed)': 136.7, 'interpreter start and networkx import': 111.4}

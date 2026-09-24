@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+    xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Defs" targetNamespace="urn:example:negative">
+  <bpmn:process id="Negative" isExecutable="true">
+    <bpmn:extensionElements><camunda:properties>
+      <camunda:property name="packageId" value="edu.example.univ.negative"/>
+      <camunda:property name="version" value="1"/>
+      <camunda:property name="minVersion" value="1"/>
+      <camunda:property name="notAfter" value="2027-09-30T23:59:59Z"/>
+    </camunda:properties></bpmn:extensionElements>
+    <bpmn:startEvent id="Start"/>
+    <bpmn:sequenceFlow id="f0" sourceRef="Start" targetRef="Check"/>
+    <bpmn:task id="Check"><bpmn:extensionElements><camunda:properties>
+      <camunda:property name="credentialType" value="StudentVC"/>
+    </camunda:properties></bpmn:extensionElements></bpmn:task>
+    <bpmn:sequenceFlow id="f1" sourceRef="Check" targetRef="Gw"/>
+    <bpmn:exclusiveGateway id="Gw" default="f1b"/>
+    <bpmn:sequenceFlow id="f1a" sourceRef="Gw" targetRef="Present">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'success'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f1b" sourceRef="Gw" targetRef="EndDenied"/>
+    <bpmn:task id="Present"><bpmn:extensionElements><camunda:properties>
+      <camunda:property name="actionType" value="PRESENT_CREDENTIAL"/>
+      <camunda:property name="presentationRequest" value="StudentVC"/>
+      <camunda:property name="claims" value="studentStatus"/>
+      <camunda:property name="channel" value="proximity"/>
+      <camunda:property name="targetDevice" value="NFC"/>
+    </camunda:properties></bpmn:extensionElements></bpmn:task>
+    <bpmn:sequenceFlow id="f2" sourceRef="Present" targetRef="EndOk"/>
+    
+    <bpmn:endEvent id="EndOk"><bpmn:extensionElements><camunda:properties>
+      <camunda:property name="result" value="success"/></camunda:properties></bpmn:extensionElements></bpmn:endEvent>
+    <bpmn:endEvent id="EndDenied"><bpmn:extensionElements><camunda:properties>
+      <camunda:property name="result" value="deny"/></camunda:properties></bpmn:extensionElements></bpmn:endEvent>
+  </bpmn:process>
+</bpmn:definitions>

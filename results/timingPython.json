@@ -1,0 +1,43 @@
+{
+  "ed25519VerifyMs": 3.919,
+  "hotel-checkin": {
+    "compileMs": 0.214,
+    "compileStdMs": 0.021,
+    "signMs": 3.775,
+    "signStdMs": 0.072,
+    "validateMs": 3.993,
+    "validateStdMs": 0.094
+  },
+  "hotel-checkout": {
+    "compileMs": 0.096,
+    "compileStdMs": 0.012,
+    "signMs": 3.802,
+    "signStdMs": 0.069,
+    "validateMs": 3.925,
+    "validateStdMs": 0.178
+  },
+  "student-status": {
+    "compileMs": 0.11,
+    "compileStdMs": 0.016,
+    "signMs": 3.794,
+    "signStdMs": 0.088,
+    "validateMs": 3.923,
+    "validateStdMs": 0.102
+  },
+  "transit-inspection": {
+    "compileMs": 0.123,
+    "compileStdMs": 0.016,
+    "signMs": 3.735,
+    "signStdMs": 0.084,
+    "validateMs": 3.913,
+    "validateStdMs": 0.093
+  },
+  "transit-ticket": {
+    "compileMs": 0.135,
+    "compileStdMs": 0.02,
+    "signMs": 3.702,
+    "signStdMs": 0.077,
+    "validateMs": 3.991,
+    "validateStdMs": 0.091
+  }
+}

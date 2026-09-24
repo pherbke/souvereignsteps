@@ -1,0 +1,154 @@
+{
+  "cases" : [
+    {
+      "expected" : "E_SIG_INVALID",
+      "id" : "A1",
+      "observed" : "E_SIG_INVALID"
+    },
+    {
+      "expected" : "E_UNKNOWN_KEY",
+      "id" : "A2",
+      "observed" : "E_UNKNOWN_KEY"
+    },
+    {
+      "expected" : "E_SIG_INVALID",
+      "id" : "A3",
+      "observed" : "E_SIG_INVALID"
+    },
+    {
+      "expected" : "E_SIG_MISSING",
+      "id" : "A4",
+      "observed" : "E_SIG_MISSING"
+    },
+    {
+      "expected" : "E_NAMESPACE",
+      "id" : "A5",
+      "observed" : "E_NAMESPACE"
+    },
+    {
+      "expected" : "E_SCHEMA",
+      "id" : "L1",
+      "observed" : "E_SCHEMA"
+    },
+    {
+      "expected" : "E_EXPIRED",
+      "id" : "L2",
+      "observed" : "E_EXPIRED"
+    },
+    {
+      "expected" : "E_ROLLBACK",
+      "id" : "L3",
+      "observed" : "E_ROLLBACK"
+    },
+    {
+      "expected" : "E_ROLLBACK",
+      "id" : "L4",
+      "observed" : "E_ROLLBACK"
+    },
+    {
+      "expected" : "E_DUPLICATE_KEY",
+      "id" : "S1",
+      "observed" : "E_DUPLICATE_KEY"
+    },
+    {
+      "expected" : "E_BAD_INITIAL",
+      "id" : "S2",
+      "observed" : "E_BAD_INITIAL"
+    },
+    {
+      "expected" : "E_DANGLING",
+      "id" : "S3",
+      "observed" : "E_DANGLING"
+    },
+    {
+      "expected" : "E_UNREACHABLE",
+      "id" : "S4",
+      "observed" : "E_UNREACHABLE"
+    },
+    {
+      "expected" : "E_CYCLE",
+      "id" : "S5",
+      "observed" : "E_CYCLE"
+    },
+    {
+      "expected" : "E_UNDECLARED_OUTCOME",
+      "id" : "T1",
+      "observed" : "E_UNDECLARED_OUTCOME"
+    },
+    {
+      "expected" : "E_PARAM",
+      "id" : "T2",
+      "observed" : "E_PARAM"
+    },
+    {
+      "expected" : "E_UNKNOWN_ACTION",
+      "id" : "C1",
+      "observed" : "E_UNKNOWN_ACTION"
+    },
+    {
+      "expected" : "E_PUBLISHER_SCOPE",
+      "id" : "C2",
+      "observed" : "E_PUBLISHER_SCOPE"
+    },
+    {
+      "expected" : "E_ENDPOINT",
+      "id" : "C3",
+      "observed" : "E_ENDPOINT"
+    },
+    {
+      "expected" : "E_EMPTY_DISCLOSURE",
+      "id" : "C4",
+      "observed" : "E_EMPTY_DISCLOSURE"
+    },
+    {
+      "expected" : "E_OFFLINE_UNMAPPED",
+      "id" : "C5",
+      "observed" : "E_OFFLINE_UNMAPPED"
+    },
+    {
+      "expected" : "E_LIMITS",
+      "id" : "C6",
+      "observed" : "E_LIMITS"
+    },
+    {
+      "expected" : "ACCEPTED",
+      "id" : "OK-hotel-checkin",
+      "observed" : "ACCEPTED"
+    },
+    {
+      "expected" : "ACCEPTED",
+      "id" : "OK-hotel-checkout",
+      "observed" : "ACCEPTED"
+    },
+    {
+      "expected" : "ACCEPTED",
+      "id" : "OK-transit-ticket",
+      "observed" : "ACCEPTED"
+    },
+    {
+      "expected" : "ACCEPTED",
+      "id" : "OK-transit-inspection",
+      "observed" : "ACCEPTED"
+    },
+    {
+      "expected" : "ACCEPTED",
+      "id" : "OK-student-status",
+      "observed" : "ACCEPTED"
+    }
+  ],
+  "machine" : "Apple M2 Pro",
+  "maxMedianValidateUs" : 327.459,
+  "medianValidateUs" : 204.042,
+  "medianVerifyUs" : 67.959000000000003,
+  "os" : "Version 26.6.2 (Build 25G83)",
+  "repeats" : 5000,
+  "validateMedianMicros" : {
+    "OK-hotel-checkin" : 327.459,
+    "OK-hotel-checkout" : 171.583,
+    "OK-student-status" : 185.708,
+    "OK-transit-inspection" : 204.042,
+    "OK-transit-ticket" : 205.75
+  },
+  "vectors" : 27,
+  "vectorsAgreeing" : 27
+}

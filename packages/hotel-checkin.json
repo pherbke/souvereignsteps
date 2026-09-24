@@ -1,0 +1,142 @@
+{
+  "floor": 2,
+  "id": "com.example.hotel.checkin",
+  "initial": "VerifyReservation",
+  "notAfter": "2027-01-31T23:59:59Z",
+  "schema": "glovebox/1",
+  "states": {
+    "ActivateRemote": {
+      "action": {
+        "params": {
+          "permissions": [
+            "UNLOCK_DOOR",
+            "ELEVATOR"
+          ]
+        },
+        "type": "ACTIVATE_REMOTE_CONTROL"
+      },
+      "on": {
+        "success": "EndCheckedIn"
+      }
+    },
+    "ConfirmCityTax": {
+      "action": {
+        "params": {
+          "formType": "PAYMENT",
+          "promptMessage": "Please confirm the city tax payment of 5.00 EUR."
+        },
+        "type": "REQUEST_USER_INPUT"
+      },
+      "on": {
+        "failure": "NotifyFallback",
+        "success": "PayCityTax"
+      }
+    },
+    "EndCheckedIn": {
+      "terminal": "success"
+    },
+    "EndFallback": {
+      "terminal": "deny"
+    },
+    "EndNoReservation": {
+      "terminal": "deny"
+    },
+    "EndOffline": {
+      "terminal": "error"
+    },
+    "NotifyFallback": {
+      "action": {
+        "params": {
+          "alertType": "ERROR",
+          "message": "Automatic check-in stopped. Please contact the reception."
+        },
+        "type": "USER_NOTIFICATION"
+      },
+      "on": {
+        "success": "EndFallback"
+      }
+    },
+    "NotifyNoReservation": {
+      "action": {
+        "params": {
+          "alertType": "WARNING",
+          "message": "No reservation found. Please contact the reception."
+        },
+        "type": "USER_NOTIFICATION"
+      },
+      "on": {
+        "success": "EndNoReservation"
+      }
+    },
+    "PayCityTax": {
+      "action": {
+        "params": {
+          "amount": "5.00",
+          "currency": "EUR",
+          "merchantId": "did:web:hotel.example",
+          "paymentEndpointUrl": "https://pay.hotel.example/v1/intents"
+        },
+        "type": "PROCESS_PAYMENT"
+      },
+      "on": {
+        "failure": "NotifyFallback",
+        "offline": "EndOffline",
+        "success": "RequestRoomKey"
+      }
+    },
+    "PresentCheckIn": {
+      "action": {
+        "params": {
+          "channel": "remote",
+          "claims": [
+            "given_name",
+            "family_name",
+            "birth_date",
+            "nationality",
+            "reservationId"
+          ],
+          "endpointUrl": "https://checkin.hotel.example/oid4vp",
+          "presentationRequest": [
+            "IdentityVC",
+            "ReservationVC"
+          ]
+        },
+        "type": "PRESENT_CREDENTIAL"
+      },
+      "on": {
+        "failure": "NotifyFallback",
+        "offline": "EndOffline",
+        "success": "ConfirmCityTax"
+      }
+    },
+    "RequestRoomKey": {
+      "action": {
+        "params": {
+          "credentialEndpointUrl": "https://keys.hotel.example/oid4vci",
+          "credentialType": "DigitalRoomKeyVC",
+          "issuerId": "did:web:hotel.example"
+        },
+        "type": "REQUEST_VC"
+      },
+      "on": {
+        "failure": "NotifyFallback",
+        "offline": "EndOffline",
+        "success": "ActivateRemote"
+      }
+    },
+    "VerifyReservation": {
+      "action": {
+        "params": {
+          "cacheOnly": "true",
+          "credentialType": "ReservationVC"
+        },
+        "type": "VERIFY_LOCAL_CREDENTIAL"
+      },
+      "on": {
+        "failure": "NotifyNoReservation",
+        "success": "PresentCheckIn"
+      }
+    }
+  },
+  "version": 3
+}

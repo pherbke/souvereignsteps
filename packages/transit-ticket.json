@@ -1,0 +1,79 @@
+{
+  "floor": 1,
+  "id": "org.example.transit.monthly-ticket",
+  "initial": "CheckEmployeeVC",
+  "notAfter": "2027-03-31T23:59:59Z",
+  "schema": "glovebox/1",
+  "states": {
+    "CheckEmployeeVC": {
+      "action": {
+        "params": {
+          "credentialType": "EmployeeVC"
+        },
+        "type": "VERIFY_LOCAL_CREDENTIAL"
+      },
+      "on": {
+        "failure": "NotifyNoEmployeeVC",
+        "success": "PresentEmployment"
+      }
+    },
+    "EndDenied": {
+      "terminal": "deny"
+    },
+    "EndIssued": {
+      "terminal": "success"
+    },
+    "EndOffline": {
+      "terminal": "error"
+    },
+    "NotifyNoEmployeeVC": {
+      "action": {
+        "params": {
+          "alertType": "WARNING",
+          "message": "No employee credential found. Please contact your employer."
+        },
+        "type": "USER_NOTIFICATION"
+      },
+      "on": {
+        "success": "EndDenied"
+      }
+    },
+    "PresentEmployment": {
+      "action": {
+        "params": {
+          "channel": "remote",
+          "claims": [
+            "employer",
+            "employmentStatus",
+            "ticketEntitlement"
+          ],
+          "endpointUrl": "https://tickets.transit.example/oid4vp",
+          "presentationRequest": [
+            "EmployeeVC"
+          ]
+        },
+        "type": "PRESENT_CREDENTIAL"
+      },
+      "on": {
+        "failure": "EndDenied",
+        "offline": "EndOffline",
+        "success": "RequestTicket"
+      }
+    },
+    "RequestTicket": {
+      "action": {
+        "params": {
+          "credentialEndpointUrl": "https://tickets.transit.example/oid4vci",
+          "credentialType": "TransitTicketVC"
+        },
+        "type": "REQUEST_VC"
+      },
+      "on": {
+        "failure": "EndDenied",
+        "offline": "EndOffline",
+        "success": "EndIssued"
+      }
+    }
+  },
+  "version": 2
+}

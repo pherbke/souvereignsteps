@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ticket inspection, restricted port of the loop body of the prototype's
+     transit model. One package run per inspection replaces the unbounded loop
+     and the message-catch event; every step is local, so an inspection works
+     without connectivity once the ticket is stored. -->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Defs_TransitInspection" targetNamespace="urn:example:processes:transit">
+  <bpmn:process id="TransitInspection" name="Ticket inspection" isExecutable="true">
+    <bpmn:extensionElements><camunda:properties>
+      <camunda:property name="packageId" value="org.example.transit.inspection"/>
+      <camunda:property name="version" value="3"/>
+      <camunda:property name="minVersion" value="2"/>
+      <camunda:property name="notAfter" value="2027-03-31T23:59:59Z"/>
+    </camunda:properties></bpmn:extensionElements>
+
+    <bpmn:startEvent id="Start"/>
+    <bpmn:sequenceFlow id="f0" sourceRef="Start" targetRef="CheckTicket"/>
+
+    <bpmn:task id="CheckTicket" name="Check the stored ticket">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="VERIFY_LOCAL_CREDENTIAL"/>
+        <camunda:property name="credentialType" value="TransitTicketVC"/>
+        <camunda:property name="cacheOnly" value="true"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f1" sourceRef="CheckTicket" targetRef="GwTicket"/>
+    <bpmn:exclusiveGateway id="GwTicket"/>
+    <bpmn:sequenceFlow id="f1a" sourceRef="GwTicket" targetRef="PresentProof">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'success'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f1b" sourceRef="GwTicket" targetRef="NotifyNoTicket">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'failure'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+    <bpmn:task id="NotifyNoTicket" name="No valid ticket">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="USER_NOTIFICATION"/>
+        <camunda:property name="message" value="No valid ticket found. Please contact customer service."/>
+        <camunda:property name="alertType" value="WARNING"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f2" sourceRef="NotifyNoTicket" targetRef="EndNoTicket"/>
+
+    <bpmn:task id="PresentProof" name="Present proof to the inspector device">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="PRESENT_CREDENTIAL"/>
+        <camunda:property name="presentationRequest" value="TransitTicketVC"/>
+        <camunda:property name="claims" value="ticketClass,validUntil"/>
+        <camunda:property name="channel" value="proximity"/>
+        <camunda:property name="targetDevice" value="NFC"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f3" sourceRef="PresentProof" targetRef="GwProof"/>
+    <bpmn:exclusiveGateway id="GwProof"/>
+    <bpmn:sequenceFlow id="f3a" sourceRef="GwProof" targetRef="LogPassed">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'success'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f3b" sourceRef="GwProof" targetRef="LogFailed">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'failure'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+    <bpmn:task id="LogPassed" name="Record passed inspection">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="LOG_EVENT"/>
+        <camunda:property name="eventMessage" value="Inspection passed"/>
+        <camunda:property name="status" value="SUCCESS"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f4" sourceRef="LogPassed" targetRef="EndPassed"/>
+
+    <bpmn:task id="LogFailed" name="Record failed inspection">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="LOG_EVENT"/>
+        <camunda:property name="eventMessage" value="Inspection failed"/>
+        <camunda:property name="status" value="FAILURE"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f5" sourceRef="LogFailed" targetRef="EndRejected"/>
+
+    <bpmn:endEvent id="EndPassed" name="Inspection passed">
+      <bpmn:extensionElements><camunda:properties><camunda:property name="result" value="success"/></camunda:properties></bpmn:extensionElements>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndRejected" name="Inspection failed">
+      <bpmn:extensionElements><camunda:properties><camunda:property name="result" value="deny"/></camunda:properties></bpmn:extensionElements>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndNoTicket" name="No ticket">
+      <bpmn:extensionElements><camunda:properties><camunda:property name="result" value="deny"/></camunda:properties></bpmn:extensionElements>
+    </bpmn:endEvent>
+  </bpmn:process>
+</bpmn:definitions>

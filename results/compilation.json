@@ -1,0 +1,401 @@
+{
+  "workloads": [
+    {
+      "workload": "hospitality export",
+      "bpmnBytes": 20985,
+      "bpmnNodes": 26,
+      "prototype": {
+        "totalMs": 0.7787710055708885,
+        "totalStdMs": 0.14371206033452305,
+        "stagesMs": {
+          "parse": 0.34062506165355444,
+          "graph": 0.2475624205544591,
+          "compile": 0.15156250447034836,
+          "serialize": 0.033958000130951405
+        },
+        "outputBytes": 6712,
+        "states": 17,
+        "revocationStates": 1
+      },
+      "glovebox": {
+        "rejected": true,
+        "diagnostics": 4,
+        "rejectMs": 0.33802108373492956
+      }
+    },
+    {
+      "workload": "transit export",
+      "bpmnBytes": 16833,
+      "bpmnNodes": 25,
+      "prototype": {
+        "totalMs": 0.5622705211862922,
+        "totalStdMs": 0.10632456228841088,
+        "stagesMs": {
+          "parse": 0.2769165439531207,
+          "graph": 0.18224946688860655,
+          "compile": 0.08206185884773731,
+          "serialize": 0.018249964341521263
+        },
+        "outputBytes": 3230,
+        "states": 14,
+        "revocationStates": 0
+      },
+      "glovebox": {
+        "rejected": true,
+        "diagnostics": 4,
+        "rejectMs": 0.26322901248931885
+      }
+    },
+    {
+      "workload": "linear 10 (notification)",
+      "bpmnBytes": 3983,
+      "bpmnNodes": 12,
+      "prototype": {
+        "totalMs": 0.20435405895113945,
+        "totalStdMs": 0.055563905624944336,
+        "stagesMs": {
+          "parse": 0.0778745161369443,
+          "graph": 0.05168805364519358,
+          "compile": 0.057020457461476326,
+          "serialize": 0.015666941180825233
+        },
+        "outputBytes": 2837,
+        "states": 12,
+        "revocationStates": 0
+      },
+      "glovebox": {
+        "rejected": false,
+        "compileMs": 0.13614597264677286,
+        "compileStdMs": 0.02200840315926217,
+        "states": 11,
+        "payloadBytes": 1237,
+        "jwsBytes": 1822,
+        "withinWalletBounds": true,
+        "validateMsPython": 4.012958495877683
+      }
+    },
+    {
+      "workload": "linear 100 (notification)",
+      "bpmnBytes": 31617,
+      "bpmnNodes": 102,
+      "prototype": {
+        "totalMs": 1.4552715001627803,
+        "totalStdMs": 0.23624261364030555,
+        "stagesMs": {
+          "parse": 0.44291699305176735,
+          "graph": 0.37914549466222525,
+          "compile": 0.46639598440378904,
+          "serialize": 0.1171664334833622
+        },
+        "outputBytes": 26331,
+        "states": 102,
+        "revocationStates": 0
+      },
+      "glovebox": {
+        "rejected": false,
+        "compileMs": 1.07856304384768,
+        "compileStdMs": 0.07086689286593903,
+        "states": 101,
+        "payloadBytes": 11049,
+        "jwsBytes": 14904,
+        "withinWalletBounds": false,
+        "validateMsPython": 4.323666915297508
+      }
+    },
+    {
+      "workload": "linear 1000 (notification)",
+      "bpmnBytes": 311521,
+      "bpmnNodes": 1002,
+      "prototype": {
+        "totalMs": 14.712104573845863,
+        "totalStdMs": 1.2643725322857673,
+        "stagesMs": {
+          "parse": 4.659833037294447,
+          "graph": 3.970687510445714,
+          "compile": 4.832186968997121,
+          "serialize": 1.0519376955926418
+        },
+        "outputBytes": 264835,
+        "states": 1002,
+        "revocationStates": 0
+      },
+      "glovebox": {
+        "rejected": false,
+        "compileMs": 12.061291607096791,
+        "compileStdMs": 1.2609773144947234,
+        "states": 1001,
+        "payloadBytes": 110951,
+        "jwsBytes": 148107,
+        "withinWalletBounds": false,
+        "validateMsPython": 8.042959030717611
+      }
+    },
+    {
+      "workload": "linear 1000 (presentation)",
+      "bpmnBytes": 486521,
+      "bpmnNodes": 1002,
+      "prototype": {
+        "totalMs": 23.05852109566331,
+        "totalStdMs": 3.199105723853438,
+        "stagesMs": {
+          "parse": 7.4824170442298055,
+          "graph": 4.997999523766339,
+          "compile": 7.548812543973327,
+          "serialize": 2.627041540108621
+        },
+        "outputBytes": 669270,
+        "states": 1003,
+        "revocationStates": 0
+      },
+      "glovebox": {
+        "rejected": false,
+        "compileMs": 19.650499569252133,
+        "compileStdMs": 1.83126723341966,
+        "states": 1001,
+        "payloadBytes": 201951,
+        "jwsBytes": 269440,
+        "withinWalletBounds": false,
+        "validateMsPython": 11.167542077600956
+      }
+    },
+    {
+      "workload": "linear 1000 (mixed)",
+      "bpmnBytes": 355521,
+      "bpmnNodes": 1002,
+      "prototype": {
+        "totalMs": 17.471437575295568,
+        "totalStdMs": 2.3959139152484257,
+        "stagesMs": {
+          "parse": 5.541291553527117,
+          "graph": 4.33102052193135,
+          "compile": 5.486500100232661,
+          "serialize": 1.6503334045410156
+        },
+        "outputBytes": 407988,
+        "states": 1003,
+        "revocationStates": 0
+      },
+      "glovebox": {
+        "rejected": false,
+        "compileMs": 14.215625007636845,
+        "compileStdMs": 1.4407584876350796,
+        "states": 1001,
+        "payloadBytes": 133951,
+        "jwsBytes": 178774,
+        "withinWalletBounds": false,
+        "validateMsPython": 8.956790901720524
+      }
+    },
+    {
+      "workload": "tree depth 2",
+      "bpmnBytes": 3765,
+      "bpmnNodes": 11,
+      "prototype": {
+        "totalMs": 0.19839592278003693,
+        "totalStdMs": 0.047443093687662245,
+        "stagesMs": {
+          "parse": 0.07695902604609728,
+          "graph": 0.0518744345754385,
+          "compile": 0.05627097561955452,
+          "serialize": 0.011312542483210564
+        },
+        "outputBytes": 1767,
+        "states": 8,
+        "revocationStates": 0
+      },
+      "glovebox": {
+        "rejected": false,
+        "compileMs": 0.11066650040447712,
+        "compileStdMs": 0.016229428676703614,
+        "states": 7,
+        "payloadBytes": 622,
+        "jwsBytes": 1002,
+        "withinWalletBounds": true,
+        "validateMsPython": 4.007437964901328
+      }
+    },
+    {
+      "workload": "tree depth 5",
+      "bpmnBytes": 30369,
+      "bpmnNodes": 95,
+      "prototype": {
+        "totalMs": 1.2713754549622536,
+        "totalStdMs": 0.184359840127931,
+        "stagesMs": {
+          "parse": 0.413646106608212,
+          "graph": 0.3436460392549634,
+          "compile": 0.4185205325484276,
+          "serialize": 0.06924988701939583
+        },
+        "outputBytes": 16006,
+        "states": 64,
+        "revocationStates": 0
+      },
+      "glovebox": {
+        "rejected": false,
+        "compileMs": 0.828083953820169,
+        "compileStdMs": 0.06559843794508076,
+        "states": 63,
+        "payloadBytes": 5014,
+        "jwsBytes": 6858,
+        "withinWalletBounds": true,
+        "validateMsPython": 4.1873331647366285
+      }
+    },
+    {
+      "workload": "tree depth 10",
+      "bpmnBytes": 988329,
+      "bpmnNodes": 3071,
+      "prototype": {
+        "totalMs": 48.09906252194196,
+        "totalStdMs": 9.296597108069776,
+        "stagesMs": {
+          "parse": 14.513562433421612,
+          "graph": 13.887041481211782,
+          "compile": 16.147563001140952,
+          "serialize": 2.1693124435842037
+        },
+        "outputBytes": 530868,
+        "states": 2048,
+        "revocationStates": 0
+      },
+      "glovebox": {
+        "rejected": false,
+        "compileMs": 32.8371039358899,
+        "compileStdMs": 5.858885464592625,
+        "states": 2047,
+        "payloadBytes": 166750,
+        "jwsBytes": 222506,
+        "withinWalletBounds": false,
+        "validateMsPython": 10.464082937687635
+      }
+    }
+  ],
+  "cliMs": {
+    "hospitality export": 115.2884584153071,
+    "linear 1000 (mixed)": 136.7392704123631,
+    "interpreter start and networkx import": 111.42345797270536
+  },
+  "fidelity": [
+    {
+      "placement": "flow",
+      "authored": 0,
+      "prototypeEmitted": 0,
+      "gloveboxEmitted": 0,
+      "gloveboxRejected": false
+    },
+    {
+      "placement": "flow",
+      "authored": 1,
+      "prototypeEmitted": 1,
+      "gloveboxEmitted": 1,
+      "gloveboxRejected": false
+    },
+    {
+      "placement": "flow",
+      "authored": 2,
+      "prototypeEmitted": 2,
+      "gloveboxEmitted": 2,
+      "gloveboxRejected": false
+    },
+    {
+      "placement": "flow",
+      "authored": 3,
+      "prototypeEmitted": 3,
+      "gloveboxEmitted": 3,
+      "gloveboxRejected": false
+    },
+    {
+      "placement": "flow",
+      "authored": 4,
+      "prototypeEmitted": 4,
+      "gloveboxEmitted": 4,
+      "gloveboxRejected": false
+    },
+    {
+      "placement": "flow",
+      "authored": 5,
+      "prototypeEmitted": 5,
+      "gloveboxEmitted": 5,
+      "gloveboxRejected": false
+    },
+    {
+      "placement": "flow",
+      "authored": 6,
+      "prototypeEmitted": 6,
+      "gloveboxEmitted": 6,
+      "gloveboxRejected": false
+    },
+    {
+      "placement": "event-subprocess",
+      "authored": 0,
+      "prototypeEmitted": 0,
+      "gloveboxEmitted": null,
+      "gloveboxRejected": true,
+      "gloveboxDiagnostics": [
+        "event subprocess is outside the supported subset"
+      ]
+    },
+    {
+      "placement": "event-subprocess",
+      "authored": 1,
+      "prototypeEmitted": 0,
+      "gloveboxEmitted": null,
+      "gloveboxRejected": true,
+      "gloveboxDiagnostics": [
+        "event subprocess is outside the supported subset"
+      ]
+    },
+    {
+      "placement": "event-subprocess",
+      "authored": 2,
+      "prototypeEmitted": 0,
+      "gloveboxEmitted": null,
+      "gloveboxRejected": true,
+      "gloveboxDiagnostics": [
+        "event subprocess is outside the supported subset"
+      ]
+    },
+    {
+      "placement": "event-subprocess",
+      "authored": 3,
+      "prototypeEmitted": 0,
+      "gloveboxEmitted": null,
+      "gloveboxRejected": true,
+      "gloveboxDiagnostics": [
+        "event subprocess is outside the supported subset"
+      ]
+    },
+    {
+      "placement": "event-subprocess",
+      "authored": 4,
+      "prototypeEmitted": 0,
+      "gloveboxEmitted": null,
+      "gloveboxRejected": true,
+      "gloveboxDiagnostics": [
+        "event subprocess is outside the supported subset"
+      ]
+    },
+    {
+      "placement": "event-subprocess",
+      "authored": 5,
+      "prototypeEmitted": 0,
+      "gloveboxEmitted": null,
+      "gloveboxRejected": true,
+      "gloveboxDiagnostics": [
+        "event subprocess is outside the supported subset"
+      ]
+    },
+    {
+      "placement": "event-subprocess",
+      "authored": 6,
+      "prototypeEmitted": 0,
+      "gloveboxEmitted": null,
+      "gloveboxRejected": true,
+      "gloveboxDiagnostics": [
+        "event subprocess is outside the supported subset"
+      ]
+    }
+  ],
+  "python": "3.14.6"
+}

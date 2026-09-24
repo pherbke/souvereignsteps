@@ -1,0 +1,73 @@
+{
+  "floor": 1,
+  "id": "edu.example.univ.student-status",
+  "initial": "CheckStudentVC",
+  "notAfter": "2027-09-30T23:59:59Z",
+  "schema": "glovebox/1",
+  "states": {
+    "CheckStudentVC": {
+      "action": {
+        "params": {
+          "credentialType": "StudentVC"
+        },
+        "type": "VERIFY_LOCAL_CREDENTIAL"
+      },
+      "on": {
+        "failure": "NotifyNotShared",
+        "success": "ConfirmDisclosure"
+      }
+    },
+    "ConfirmDisclosure": {
+      "action": {
+        "params": {
+          "formType": "CONSENT",
+          "promptMessage": "Share your student status and its validity date with this counter?"
+        },
+        "type": "REQUEST_USER_INPUT"
+      },
+      "on": {
+        "failure": "EndNotShared",
+        "success": "PresentStatus"
+      }
+    },
+    "EndNotShared": {
+      "terminal": "deny"
+    },
+    "EndShown": {
+      "terminal": "success"
+    },
+    "NotifyNotShared": {
+      "action": {
+        "params": {
+          "alertType": "INFO",
+          "message": "No current student credential found."
+        },
+        "type": "USER_NOTIFICATION"
+      },
+      "on": {
+        "success": "EndNotShared"
+      }
+    },
+    "PresentStatus": {
+      "action": {
+        "params": {
+          "channel": "proximity",
+          "claims": [
+            "studentStatus",
+            "validUntil"
+          ],
+          "presentationRequest": [
+            "StudentVC"
+          ],
+          "targetDevice": "BLE"
+        },
+        "type": "PRESENT_CREDENTIAL"
+      },
+      "on": {
+        "failure": "EndNotShared",
+        "success": "EndShown"
+      }
+    }
+  },
+  "version": 1
+}

@@ -1,0 +1,148 @@
+diff --git a/PrototypeWallet/PrototypeWallet/domain/CredentialPresentation.swift b/PrototypeWallet/PrototypeWallet/domain/CredentialPresentation.swift
+index e342ff6..d4f78f4 100644
+--- a/PrototypeWallet/PrototypeWallet/domain/CredentialPresentation.swift
++++ b/PrototypeWallet/PrototypeWallet/domain/CredentialPresentation.swift
+@@ -85,6 +85,8 @@ struct PresentationOutcome {
+     let roomNumber: String?
+     let targetState: String?
+     let xstateMachineJson: String?
++    /// Glovebox: a signed process package (compact JWS) delivered with the verifier's answer.
++    var gloveboxPackage: String? = nil
+ }
+ 
+ /// Best-effort parsing of the verifier's JSON response body for process_step,
+@@ -110,8 +112,10 @@ private func parsePresentationOutcome(data: Data, accepted: Bool) -> Presentatio
+     ].compactMap { $0 }.first { !$0.isEmpty }
+ 
+     let targetState = (processStep?["id"] as? String).flatMap { $0.isEmpty ? nil : $0 }
++    let gloveboxPackage = (json["glovebox_package"] as? String) ?? (processStep?["glovebox_package"] as? String)
+ 
+-    return PresentationOutcome(accepted: accepted, roomNumber: roomNumber, targetState: targetState, xstateMachineJson: xstateMachineJson)
++    return PresentationOutcome(accepted: accepted, roomNumber: roomNumber, targetState: targetState,
++                               xstateMachineJson: xstateMachineJson, gloveboxPackage: gloveboxPackage)
+ }
+ 
+ private func postCredentialPresentation<T: Encodable>(url: URL, vpToken: String, presentationSubmission: T) async throws -> RequestResult<PresentationOutcome> {
+diff --git a/PrototypeWallet/PrototypeWallet/domain/XStateEngine.swift b/PrototypeWallet/PrototypeWallet/domain/XStateEngine.swift
+index 5bcc72e..9f14db6 100644
+--- a/PrototypeWallet/PrototypeWallet/domain/XStateEngine.swift
++++ b/PrototypeWallet/PrototypeWallet/domain/XStateEngine.swift
+@@ -503,6 +503,25 @@ class XStateEngine: ObservableObject {
+         }
+     }
+ 
++    /// Glovebox: shows the state of a validated package's run in the process screens.
++    /// Display only; the run itself advances in GloveboxProcessDriver.
++    func showGloveboxState(credentialId: String, statechart: String, state: String) {
++        if machine?.id != Self.statechartId(statechart) {
++            updateMachine(statechart)
++        }
++        credentialStates[credentialId] = state
++        let now = Date().timeIntervalSince1970 * 1000
++        stateTimestamps[credentialId] = now
++        defaults.set(state, forKey: "state_\(credentialId)")
++        defaults.set(now, forKey: "statetime_\(credentialId)")
++    }
++
++    private static func statechartId(_ json: String) -> String? {
++        guard let data = json.data(using: .utf8),
++              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
++        return object["id"] as? String
++    }
++
+     /// Fast-forwards a credential's process to the given state, if it exists in the machine.
+     func forceState(credentialId: String, targetState: String) {
+         guard let machine = machine, machine.states[targetState] != nil else { return }
+diff --git a/PrototypeWallet/PrototypeWallet/view/card/CardDetailView.swift b/PrototypeWallet/PrototypeWallet/view/card/CardDetailView.swift
+index ef97a5f..a5f976a 100644
+--- a/PrototypeWallet/PrototypeWallet/view/card/CardDetailView.swift
++++ b/PrototypeWallet/PrototypeWallet/view/card/CardDetailView.swift
+@@ -136,7 +136,9 @@ private struct ProcessCardView: View {
+             if !done {
+                 HStack(spacing: 12) {
+                     Button(action: {
+-                        engine.processNextStep(credentialId: credentialId)
++                        if !GloveboxWallet.nextStep(credentialId: credentialId, engine: engine) {
++                            engine.processNextStep(credentialId: credentialId)
++                        }
+                     }) {
+                         Text("Next step")
+                             .font(.subheadline)
+diff --git a/PrototypeWallet/PrototypeWallet/view/flow/FlowScreen.swift b/PrototypeWallet/PrototypeWallet/view/flow/FlowScreen.swift
+index 71c3d94..db237f1 100644
+--- a/PrototypeWallet/PrototypeWallet/view/flow/FlowScreen.swift
++++ b/PrototypeWallet/PrototypeWallet/view/flow/FlowScreen.swift
+@@ -373,6 +373,10 @@ struct FlowScreen: View {
+     ) {
+         switch result {
+         case .success(.Success(let outcome)):
++            // Glovebox: only validated, signed packages are installed, and a run advances only on
++            // the presentation handler's outcome. Unsigned statecharts (F1) and verifier-named
++            // target states (F2) are honored only in explicit legacy mode.
++            GloveboxWallet.applyPresentation(outcome, credentialId: credentialId, engine: engine)
+             if outcome.accepted {
+                 applyPresentationOutcome(outcome, credentialId: credentialId)
+             }
+@@ -386,17 +390,16 @@ struct FlowScreen: View {
+         case .success(.Cancelled):
+             done(false, "Presentation was cancelled.")
+         case .failure(let error):
++            GloveboxWallet.presentationFailed(error, credentialId: credentialId, engine: engine)
+             done(false, error.localizedDescription)
+         }
+     }
+ 
+     private func applyPresentationOutcome(_ outcome: PresentationOutcome, credentialId: String) {
+-        if let xstateMachineJson = outcome.xstateMachineJson {
+-            engine.updateMachine(xstateMachineJson)
+-        }
+         if let roomNumber = outcome.roomNumber {
+             engine.setRoomNumber(credentialId: credentialId, roomNumber: roomNumber)
+         }
++        guard GloveboxWallet.allowLegacyStatecharts else { return }
+ 
+         let targetState = completedState(for: outcome.targetState ?? "REQUEST_CREDENTIAL")
+         engine.forceState(credentialId: credentialId, targetState: targetState)
+diff --git a/PrototypeWallet/PrototypeWallet/view/qr/QrScannerView.swift b/PrototypeWallet/PrototypeWallet/view/qr/QrScannerView.swift
+index 8f6bd0f..0bba2f0 100644
+--- a/PrototypeWallet/PrototypeWallet/view/qr/QrScannerView.swift
++++ b/PrototypeWallet/PrototypeWallet/view/qr/QrScannerView.swift
+@@ -285,15 +285,18 @@ class QrScannerViewModel: ObservableObject {
+                             case .Success(let outcome):
+                                 await MainActor.run { [weak self] in
+                                     guard let self = self else { return }
++                                    // Glovebox: install signed packages only and advance a run only on the
++                                    // presentation outcome; legacy statecharts and forced states require
++                                    // explicit legacy mode (F1, F2).
++                                    GloveboxWallet.applyPresentation(outcome, credentialId: cardID, engine: engine)
+                                     if outcome.accepted {
+-                                        if let xstateMachineJson = outcome.xstateMachineJson {
+-                                            engine.updateMachine(xstateMachineJson)
+-                                        }
+                                         if let roomNumber = outcome.roomNumber {
+                                             engine.setRoomNumber(credentialId: cardID, roomNumber: roomNumber)
+                                         }
+-                                        let targetState = outcome.targetState == "REVOKE_ROOM_KEY_VC" ? "CHECK_OUT_DONE" : (outcome.targetState ?? "REQUEST_CREDENTIAL")
+-                                        engine.forceState(credentialId: cardID, targetState: targetState)
++                                        if GloveboxWallet.allowLegacyStatecharts {
++                                            let targetState = outcome.targetState == "REVOKE_ROOM_KEY_VC" ? "CHECK_OUT_DONE" : (outcome.targetState ?? "REQUEST_CREDENTIAL")
++                                            engine.forceState(credentialId: cardID, targetState: targetState)
++                                        }
+                                     }
+                                     let title: String
+                                     let message: String
+diff --git a/PrototypeWallet/PrototypeWallet/view/topics/ProcessDetailScreen.swift b/PrototypeWallet/PrototypeWallet/view/topics/ProcessDetailScreen.swift
+index 2e41645..042faef 100644
+--- a/PrototypeWallet/PrototypeWallet/view/topics/ProcessDetailScreen.swift
++++ b/PrototypeWallet/PrototypeWallet/view/topics/ProcessDetailScreen.swift
+@@ -164,7 +164,9 @@ struct ProcessDetailScreen: View {
+                 if currentState != "CHECK_OUT_DONE" && currentState != "FAIL_STATE" {
+                     HStack(spacing: 10) {
+                         Button {
+-                            engine.processNextStep(credentialId: credentialId)
++                            if !GloveboxWallet.nextStep(credentialId: credentialId, engine: engine) {
++                                engine.processNextStep(credentialId: credentialId)
++                            }
+                         } label: {
+                             Text("Next Step")
+                                 .font(.system(size: 15, weight: .semibold))

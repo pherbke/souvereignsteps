@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_Hospitality" targetNamespace="urn:example:legacy:hospitality">
+  <message id="Message_Checkout" name="CHECKOUT_TRIGGER" />
+  <signal id="Sig_Lobby" name="LobbyQR_NFC_Signal" />
+  <message id="Msg_Checkout" name="CheckoutTriggerMessage" />
+  <message id="Msg_Timer_Checkout" name="AutoCheckoutTimer" />
+  <process id="Process_Hospitality" name="Dynamic Hospitality – Edge Execution (Wallet-Perspektive)" isExecutable="false">
+    <startEvent id="Start_1" name="Wallet aktiviert">
+      <outgoing>Flow_0jlexhf</outgoing>
+    </startEvent>
+    <task id="T_CheckResVC" name="Wallet prueft Vorhandensein des Reservierungs-VCs">
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="VERIFY_LOCAL_CREDENTIAL" />
+          <camunda:property name="credentialType" value="ReservationVC" />
+          <camunda:property name="cacheOnly" value="true" />
+        </camunda:properties>
+      </extensionElements>
+      <incoming>Flow_0a0wgxu</incoming>
+    </task>
+    <exclusiveGateway id="EG_CheckResVC" name="VC vorhanden?">
+      <outgoing>Flow_1hhelko</outgoing>
+    </exclusiveGateway>
+    <task id="T_NoRes" name="Fehler: Keine Reservierung - Bitte an Rezeption wenden">
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="USER_NOTIFICATION" />
+          <camunda:property name="message" value="Keine Reservierung gefunden. Bitte wenden Sie sich an die Rezeption." />
+          <camunda:property name="alertType" value="WARNING" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+    <endEvent id="End_NoRes" name="Abbruch" />
+    <intermediateCatchEvent id="ICE_Lobby" name="Wallet empfaengt QR/NFC-Trigger in der Lobby">
+      <incoming>Flow_0jlexhf</incoming>
+      <signalEventDefinition signalRef="Sig_Lobby" />
+    </intermediateCatchEvent>
+    <task id="T_LoadFlow" name="Wallet laedt check-in-flow.json und startet State Machine">
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="TRIGGER_WORKFLOW" />
+          <camunda:property name="flowId" value="check-in-flow.json" />
+        </camunda:properties>
+      </extensionElements>
+      <outgoing>Flow_0a0wgxu</outgoing>
+    </task>
+    <task id="T_PresentVC" name="Wallet praesentiert Identity VC und Reservation VC an Terminal">
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="PRESENT_CREDENTIAL" />
+          <camunda:property name="presentationRequest" value="IdentityVC,ReservationVC" />
+          <camunda:property name="endpointUrl" value="https://api.hotel.local/checkin" />
+        </camunda:properties>
+      </extensionElements>
+      <incoming>Flow_1hhelko</incoming>
+    </task>
+    <exclusiveGateway id="EG_Dynamic" name="Dynamische Logik: City Tax injiziert?" />
+    <task id="T_CityTax" name="Check-in pausiert – Wallet fordert City Tax Zahlung an">
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="REQUEST_USER_INPUT" />
+          <camunda:property name="formType" value="PAYMENT" />
+          <camunda:property name="promptMessage" value="Bitte bestaetigen Sie die City Tax Zahlung (5,00 EUR)" />
+          <camunda:property name="resultKey" value="context.cityTaxApproved" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+    <task id="T_Payment" name="Wallet verarbeitet City Tax Zahlung">
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="PROCESS_PAYMENT" />
+          <camunda:property name="amount" value="5.00" />
+          <camunda:property name="currency" value="EUR" />
+          <camunda:property name="paymentIntentId" value="context.paymentIntentId" />
+          <camunda:property name="merchantId" value="did:web:hotel.com" />
+          <camunda:property name="resultKey" value="context.paymentSuccess" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+    <exclusiveGateway id="EG_ModuleDone" name="Modul erfolgreich abgeschlossen?" />
+    <task id="T_Fallback" name="Manueller Fallback: Wallet verweist Gast an die Rezeption">
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="USER_NOTIFICATION" />
+          <camunda:property name="message" value="Automatischer Check-in abgebrochen. Bitte wenden Sie sich an die Rezeption." />
+          <camunda:property name="alertType" value="WARNING" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+    <endEvent id="End_ModuleFail" name="Automatischer Check-in abgebrochen" />
+    <exclusiveGateway id="EG_DynMerge" />
+    <exclusiveGateway id="EG_Verify" name="Verifizierung und Zahlung erfolgreich?" />
+    <task id="T_ReceiveKey" name="Wallet empfaengt Digital Room Key VC von Hotel-API">
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="REQUEST_VC" />
+          <camunda:property name="credentialType" value="DigitalRoomKeyVC" />
+          <camunda:property name="issuerId" value="did:web:hotel.com" />
+          <camunda:property name="credentialEndpointUrl" value="https://api.hotel.local/issue/roomkey" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+    <task id="T_RemoteCtrl" name="Wallet aktiv im Remote-Control-Modus (In-Stay)">
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="ACTIVATE_REMOTE_CONTROL" />
+          <camunda:property name="roomId" value="context.roomId" />
+          <camunda:property name="permissions" value="UNLOCK_DOOR,ELEVATOR" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+    <eventBasedGateway id="EBG_Checkout" name="Warten auf Check-out Trigger" />
+    <intermediateCatchEvent id="ICE_Checkout" name="Check-out Trigger empfangen (manuell)">
+      <messageEventDefinition messageRef="Message_Checkout" />
+    </intermediateCatchEvent>
+    <intermediateCatchEvent id="ICE_Timer" name="Automatischer Check-out (Timer)">
+      <timerEventDefinition>
+        <timeDuration xsi:type="tFormalExpression">PT24H</timeDuration>
+      </timerEventDefinition>
+    </intermediateCatchEvent>
+    <exclusiveGateway id="EG_CheckoutMerge" />
+    <task id="T_Revoke" name="Room Key VC wird automatisch und sofort widerrufen (Revocation)">
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="REVOKE_CREDENTIAL" />
+          <camunda:property name="credentialId" value="context.roomKeyId" />
+          <camunda:property name="action" value="REVOKE" />
+          <camunda:property name="endpointUrl" value="https://api.hotel.local/revoke" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+    <endEvent id="End_OK" name="Check-Out abgeschlossen" />
+    <task id="T_Abort" name="Check-in abgebrochen – Wallet informiert Gast">
+      <extensionElements>
+        <camunda:properties xmlns:camunda="http://camunda.org/schema/1.0/bpmn">
+          <camunda:property name="actionType" value="USER_NOTIFICATION" />
+          <camunda:property name="message" value="Check-in fehlgeschlagen. Bitte wenden Sie sich an die Rezeption." />
+          <camunda:property name="alertType" value="ERROR" />
+        </camunda:properties>
+      </extensionElements>
+    </task>
+    <endEvent id="End_Fail" name="Prozess beendet (Fehler)" />
+    <sequenceFlow id="F_01_check" sourceRef="T_CheckResVC" targetRef="EG_CheckResVC" />
+    <sequenceFlow id="F_01_nein" name="Nein" sourceRef="EG_CheckResVC" targetRef="T_NoRes" />
+    <sequenceFlow id="F_01_end" sourceRef="T_NoRes" targetRef="End_NoRes" />
+    <sequenceFlow id="F_02" sourceRef="ICE_Lobby" targetRef="T_LoadFlow" />
+    <sequenceFlow id="F_04" sourceRef="T_PresentVC" targetRef="EG_Dynamic" />
+    <sequenceFlow id="F_05" name="Ja (City Tax injiziert)" sourceRef="EG_Dynamic" targetRef="T_CityTax" />
+    <sequenceFlow id="F_06" sourceRef="T_CityTax" targetRef="T_Payment" />
+    <sequenceFlow id="F_07" sourceRef="T_Payment" targetRef="EG_ModuleDone" />
+    <sequenceFlow id="F_07a" name="Ja (Modul OK)" sourceRef="EG_ModuleDone" targetRef="EG_DynMerge" />
+    <sequenceFlow id="F_07b" name="Nein (Abbruch)" sourceRef="EG_ModuleDone" targetRef="T_Fallback" />
+    <sequenceFlow id="F_07c" sourceRef="T_Fallback" targetRef="End_ModuleFail" />
+    <sequenceFlow id="F_08" name="Nein (Standardablauf)" sourceRef="EG_Dynamic" targetRef="EG_DynMerge" />
+    <sequenceFlow id="F_09" sourceRef="EG_DynMerge" targetRef="EG_Verify" />
+    <sequenceFlow id="F_10" name="Ja (Erfolgreich)" sourceRef="EG_Verify" targetRef="T_ReceiveKey" />
+    <sequenceFlow id="F_11" sourceRef="T_ReceiveKey" targetRef="T_RemoteCtrl" />
+    <sequenceFlow id="F_12" sourceRef="T_RemoteCtrl" targetRef="EBG_Checkout" />
+    <sequenceFlow id="F_12a" name="Manuell" sourceRef="EBG_Checkout" targetRef="ICE_Checkout" />
+    <sequenceFlow id="F_12b" name="Automatisch (Timer)" sourceRef="EBG_Checkout" targetRef="ICE_Timer" />
+    <sequenceFlow id="F_13a" sourceRef="ICE_Checkout" targetRef="EG_CheckoutMerge" />
+    <sequenceFlow id="F_13b" sourceRef="ICE_Timer" targetRef="EG_CheckoutMerge" />
+    <sequenceFlow id="F_13" sourceRef="EG_CheckoutMerge" targetRef="T_Revoke" />
+    <sequenceFlow id="F_14" sourceRef="T_Revoke" targetRef="End_OK" />
+    <sequenceFlow id="F_15" name="Nein (Fehlgeschlagen)" sourceRef="EG_Verify" targetRef="T_Abort" />
+    <sequenceFlow id="F_16" sourceRef="T_Abort" targetRef="End_Fail" />
+    <sequenceFlow id="Flow_0jlexhf" sourceRef="Start_1" targetRef="ICE_Lobby" />
+    <sequenceFlow id="Flow_0a0wgxu" sourceRef="T_LoadFlow" targetRef="T_CheckResVC" />
+    <sequenceFlow id="Flow_1hhelko" name="Ja" sourceRef="EG_CheckResVC" targetRef="T_PresentVC" />
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_Hospitality">
+      <bpmndi:BPMNShape id="S_T_PresentVC" bpmnElement="T_PresentVC">
+        <dc:Bounds x="570" y="230" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_EG_Dynamic" bpmnElement="EG_Dynamic" isMarkerVisible="true">
+        <dc:Bounds x="790" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_CityTax" bpmnElement="T_CityTax">
+        <dc:Bounds x="900" y="230" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_Payment" bpmnElement="T_Payment">
+        <dc:Bounds x="1110" y="230" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_EG_ModuleDone" bpmnElement="EG_ModuleDone" isMarkerVisible="true">
+        <dc:Bounds x="1330" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_EG_DynMerge" bpmnElement="EG_DynMerge" isMarkerVisible="true">
+        <dc:Bounds x="1550" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_EG_Verify" bpmnElement="EG_Verify" isMarkerVisible="true">
+        <dc:Bounds x="1660" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_ReceiveKey" bpmnElement="T_ReceiveKey">
+        <dc:Bounds x="1770" y="230" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_RemoteCtrl" bpmnElement="T_RemoteCtrl">
+        <dc:Bounds x="1980" y="230" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_EBG_Checkout" bpmnElement="EBG_Checkout" isMarkerVisible="true">
+        <dc:Bounds x="2200" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_ICE_Checkout" bpmnElement="ICE_Checkout">
+        <dc:Bounds x="2320" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_ICE_Timer" bpmnElement="ICE_Timer">
+        <dc:Bounds x="2320" y="322" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_EG_CheckoutMerge" bpmnElement="EG_CheckoutMerge" isMarkerVisible="true">
+        <dc:Bounds x="2430" y="245" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_Revoke" bpmnElement="T_Revoke">
+        <dc:Bounds x="2540" y="230" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_End_OK" bpmnElement="End_OK">
+        <dc:Bounds x="2760" y="252" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_Abort" bpmnElement="T_Abort">
+        <dc:Bounds x="1770" y="530" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_End_Fail" bpmnElement="End_Fail">
+        <dc:Bounds x="1990" y="552" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_LoadFlow" bpmnElement="T_LoadFlow">
+        <dc:Bounds x="0" y="230" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_ICE_Lobby" bpmnElement="ICE_Lobby">
+        <dc:Bounds x="-100" y="252" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="-125" y="288" width="86" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_Start" bpmnElement="Start_1">
+        <dc:Bounds x="-198" y="252" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="-215" y="288" width="72" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_CheckResVC" bpmnElement="T_CheckResVC">
+        <dc:Bounds x="210" y="230" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_EG_CheckResVC" bpmnElement="EG_CheckResVC" isMarkerVisible="true">
+        <dc:Bounds x="435" y="245" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="421.5" y="221" width="77" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_NoRes" bpmnElement="T_NoRes">
+        <dc:Bounds x="380" y="420" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_End_NoRes" bpmnElement="End_NoRes">
+        <dc:Bounds x="442" y="562" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="439" y="608" width="41" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_T_Fallback" bpmnElement="T_Fallback">
+        <dc:Bounds x="1440" y="100" width="200" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_End_ModuleFail" bpmnElement="End_ModuleFail">
+        <dc:Bounds x="1752" y="122" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1735" y="158" width="71" height="40" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="E_F_04" bpmnElement="F_04">
+        <di:waypoint x="730" y="270" />
+        <di:waypoint x="790" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_05" bpmnElement="F_05">
+        <di:waypoint x="840" y="270" />
+        <di:waypoint x="900" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_06" bpmnElement="F_06">
+        <di:waypoint x="1060" y="270" />
+        <di:waypoint x="1110" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_07" bpmnElement="F_07">
+        <di:waypoint x="1270" y="270" />
+        <di:waypoint x="1330" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_07a" bpmnElement="F_07a">
+        <di:waypoint x="1380" y="270" />
+        <di:waypoint x="1550" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_07b" bpmnElement="F_07b">
+        <di:waypoint x="1355" y="245" />
+        <di:waypoint x="1355" y="140" />
+        <di:waypoint x="1440" y="140" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1303" y="188" width="74" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_07c" bpmnElement="F_07c">
+        <di:waypoint x="1640" y="140" />
+        <di:waypoint x="1752" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_08" bpmnElement="F_08">
+        <di:waypoint x="815" y="295" />
+        <di:waypoint x="815" y="510" />
+        <di:waypoint x="1575" y="510" />
+        <di:waypoint x="1575" y="295" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_09" bpmnElement="F_09">
+        <di:waypoint x="1600" y="270" />
+        <di:waypoint x="1660" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_10" bpmnElement="F_10">
+        <di:waypoint x="1710" y="270" />
+        <di:waypoint x="1770" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_11" bpmnElement="F_11">
+        <di:waypoint x="1930" y="270" />
+        <di:waypoint x="1980" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_12" bpmnElement="F_12">
+        <di:waypoint x="2140" y="270" />
+        <di:waypoint x="2200" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_12a" bpmnElement="F_12a">
+        <di:waypoint x="2225" y="245" />
+        <di:waypoint x="2225" y="200" />
+        <di:waypoint x="2320" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_12b" bpmnElement="F_12b">
+        <di:waypoint x="2225" y="295" />
+        <di:waypoint x="2225" y="340" />
+        <di:waypoint x="2320" y="340" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_13a" bpmnElement="F_13a">
+        <di:waypoint x="2356" y="200" />
+        <di:waypoint x="2455" y="200" />
+        <di:waypoint x="2455" y="245" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_13b" bpmnElement="F_13b">
+        <di:waypoint x="2356" y="340" />
+        <di:waypoint x="2455" y="340" />
+        <di:waypoint x="2455" y="295" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_13" bpmnElement="F_13">
+        <di:waypoint x="2480" y="270" />
+        <di:waypoint x="2540" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_14" bpmnElement="F_14">
+        <di:waypoint x="2700" y="270" />
+        <di:waypoint x="2760" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_15" bpmnElement="F_15">
+        <di:waypoint x="1685" y="295" />
+        <di:waypoint x="1685" y="570" />
+        <di:waypoint x="1770" y="570" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1687" y="416" width="85" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_16" bpmnElement="F_16">
+        <di:waypoint x="1930" y="570" />
+        <di:waypoint x="1990" y="570" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_02" bpmnElement="F_02">
+        <di:waypoint x="-64" y="270" />
+        <di:waypoint x="0" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0jlexhf_di" bpmnElement="Flow_0jlexhf">
+        <di:waypoint x="-162" y="270" />
+        <di:waypoint x="-100" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_01_check" bpmnElement="F_01_check">
+        <di:waypoint x="370" y="270" />
+        <di:waypoint x="435" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_01_nein" bpmnElement="F_01_nein">
+        <di:waypoint x="460" y="295" />
+        <di:waypoint x="460" y="420" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="464" y="317" width="23" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="E_F_01_end" bpmnElement="F_01_end">
+        <di:waypoint x="460" y="500" />
+        <di:waypoint x="460" y="562" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0a0wgxu_di" bpmnElement="Flow_0a0wgxu">
+        <di:waypoint x="160" y="270" />
+        <di:waypoint x="210" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1hhelko_di" bpmnElement="Flow_1hhelko">
+        <di:waypoint x="485" y="270" />
+        <di:waypoint x="570" y="270" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="522" y="252" width="12" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

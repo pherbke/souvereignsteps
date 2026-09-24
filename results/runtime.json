@@ -1,0 +1,32 @@
+{
+  "failClosed": [
+    {
+      "check": "verifier names a target state instead of an outcome",
+      "reachedProtectedState": false,
+      "reason": "E_UNDECLARED_OUTCOME",
+      "result": "error"
+    },
+    {
+      "check": "declared but unmapped outcome",
+      "reason": "E_UNMAPPED_OUTCOME",
+      "result": "error"
+    },
+    {
+      "check": "resume under the same accepted version",
+      "result": "success",
+      "terminal": "EndCheckedIn"
+    },
+    {
+      "check": "resume after a forced update raised the floor",
+      "reason": "RESTART:E_ROLLBACK",
+      "result": "error"
+    },
+    {
+      "check": "resume after package expiry",
+      "reason": "RESTART:E_EXPIRED",
+      "result": "error"
+    }
+  ],
+  "pathsAgreeing": 25,
+  "pathsReplayed": 25
+}

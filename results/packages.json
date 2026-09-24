@@ -1,0 +1,535 @@
+{
+  "hotel-checkin": {
+    "actions": 8,
+    "backendVisibleOutcomes": 37,
+    "bpmnBytes": 9259,
+    "bytes": 3041,
+    "compileReport": {
+      "bpmnFlows": 22,
+      "bpmnNodes": 18,
+      "defaultCovered": {
+        "ConfirmCityTax": [
+          "failure"
+        ],
+        "PayCityTax": [
+          "failure"
+        ],
+        "PresentCheckIn": [
+          "failure"
+        ],
+        "RequestRoomKey": [
+          "failure"
+        ]
+      },
+      "failClosedOutcomes": {
+        "ActivateRemote": [
+          "failure"
+        ],
+        "ConfirmCityTax": [],
+        "NotifyFallback": [],
+        "NotifyNoReservation": [],
+        "PayCityTax": [],
+        "PresentCheckIn": [],
+        "RequestRoomKey": [],
+        "VerifyReservation": []
+      },
+      "states": 12,
+      "transitions": 16
+    },
+    "digest": "76ef51ae3efef7863ddc4e32938c4aa4f0b8cf4b84e7de0a2f426315bd094eaa",
+    "failClosedOutcomes": {
+      "ActivateRemote": [
+        "failure"
+      ]
+    },
+    "failurePaths": 8,
+    "id": "com.example.hotel.checkin",
+    "localActions": 5,
+    "localFailurePaths": 1,
+    "networkActions": 3,
+    "offlinePaths": 1,
+    "pathList": [
+      {
+        "kind": "deny",
+        "remote": 0,
+        "steps": [
+          "VerifyReservation:failure",
+          "NotifyNoReservation:success"
+        ],
+        "terminal": "EndNoReservation"
+      },
+      {
+        "kind": "deny",
+        "remote": 1,
+        "steps": [
+          "VerifyReservation:success",
+          "PresentCheckIn:failure",
+          "NotifyFallback:success"
+        ],
+        "terminal": "EndFallback"
+      },
+      {
+        "kind": "error",
+        "remote": 1,
+        "steps": [
+          "VerifyReservation:success",
+          "PresentCheckIn:offline"
+        ],
+        "terminal": "EndOffline"
+      },
+      {
+        "kind": "deny",
+        "remote": 1,
+        "steps": [
+          "VerifyReservation:success",
+          "PresentCheckIn:success",
+          "ConfirmCityTax:failure",
+          "NotifyFallback:success"
+        ],
+        "terminal": "EndFallback"
+      },
+      {
+        "kind": "deny",
+        "remote": 2,
+        "steps": [
+          "VerifyReservation:success",
+          "PresentCheckIn:success",
+          "ConfirmCityTax:success",
+          "PayCityTax:failure",
+          "NotifyFallback:success"
+        ],
+        "terminal": "EndFallback"
+      },
+      {
+        "kind": "error",
+        "remote": 2,
+        "steps": [
+          "VerifyReservation:success",
+          "PresentCheckIn:success",
+          "ConfirmCityTax:success",
+          "PayCityTax:offline"
+        ],
+        "terminal": "EndOffline"
+      },
+      {
+        "kind": "deny",
+        "remote": 3,
+        "steps": [
+          "VerifyReservation:success",
+          "PresentCheckIn:success",
+          "ConfirmCityTax:success",
+          "PayCityTax:success",
+          "RequestRoomKey:failure",
+          "NotifyFallback:success"
+        ],
+        "terminal": "EndFallback"
+      },
+      {
+        "kind": "error",
+        "remote": 3,
+        "steps": [
+          "VerifyReservation:success",
+          "PresentCheckIn:success",
+          "ConfirmCityTax:success",
+          "PayCityTax:success",
+          "RequestRoomKey:offline"
+        ],
+        "terminal": "EndOffline"
+      },
+      {
+        "kind": "success",
+        "remote": 3,
+        "steps": [
+          "VerifyReservation:success",
+          "PresentCheckIn:success",
+          "ConfirmCityTax:success",
+          "PayCityTax:success",
+          "RequestRoomKey:success",
+          "ActivateRemote:success"
+        ],
+        "terminal": "EndCheckedIn"
+      }
+    ],
+    "paths": 9,
+    "payloadBytes": 2150,
+    "remoteVisibleEvents": 16,
+    "states": 12,
+    "successPathActions": [
+      6
+    ],
+    "successPathRemote": [
+      3
+    ],
+    "successPaths": 1,
+    "terminals": [
+      "EndCheckedIn",
+      "EndFallback",
+      "EndNoReservation",
+      "EndOffline"
+    ],
+    "transitions": 16,
+    "version": 3
+  },
+  "hotel-checkout": {
+    "actions": 3,
+    "backendVisibleOutcomes": 5,
+    "bpmnBytes": 4165,
+    "bytes": 1386,
+    "compileReport": {
+      "bpmnFlows": 7,
+      "bpmnNodes": 8,
+      "defaultCovered": {},
+      "failClosedOutcomes": {
+        "ArchiveKey": [
+          "failure"
+        ],
+        "NotifyReception": [],
+        "PresentRoomKey": []
+      },
+      "states": 6,
+      "transitions": 5
+    },
+    "digest": "ef4fff9ba69ea2fc9ff0f595e7f16275160c6659afd598990dd6b26571b51045",
+    "failClosedOutcomes": {
+      "ArchiveKey": [
+        "failure"
+      ]
+    },
+    "failurePaths": 2,
+    "id": "com.example.hotel.checkout",
+    "localActions": 2,
+    "localFailurePaths": 0,
+    "networkActions": 1,
+    "offlinePaths": 0,
+    "pathList": [
+      {
+        "kind": "deny",
+        "remote": 1,
+        "steps": [
+          "PresentRoomKey:failure",
+          "NotifyReception:success"
+        ],
+        "terminal": "EndDenied"
+      },
+      {
+        "kind": "error",
+        "remote": 1,
+        "steps": [
+          "PresentRoomKey:offline"
+        ],
+        "terminal": "EndOffline"
+      },
+      {
+        "kind": "success",
+        "remote": 1,
+        "steps": [
+          "PresentRoomKey:success",
+          "ArchiveKey:success"
+        ],
+        "terminal": "EndCheckedOut"
+      }
+    ],
+    "paths": 3,
+    "payloadBytes": 909,
+    "remoteVisibleEvents": 3,
+    "states": 6,
+    "successPathActions": [
+      2
+    ],
+    "successPathRemote": [
+      1
+    ],
+    "successPaths": 1,
+    "terminals": [
+      "EndCheckedOut",
+      "EndDenied",
+      "EndOffline"
+    ],
+    "transitions": 5,
+    "version": 1
+  },
+  "student-status": {
+    "actions": 4,
+    "backendVisibleOutcomes": 10,
+    "bpmnBytes": 4900,
+    "bytes": 1556,
+    "compileReport": {
+      "bpmnFlows": 11,
+      "bpmnNodes": 10,
+      "defaultCovered": {
+        "CheckStudentVC": [
+          "failure"
+        ],
+        "ConfirmDisclosure": [
+          "failure"
+        ]
+      },
+      "failClosedOutcomes": {
+        "CheckStudentVC": [],
+        "ConfirmDisclosure": [],
+        "NotifyNotShared": [],
+        "PresentStatus": [
+          "offline"
+        ]
+      },
+      "states": 6,
+      "transitions": 7
+    },
+    "digest": "6b83f402d190a7cf110f3afe0efe2e16375f8de5a39d354d632b59c8c36c816d",
+    "failClosedOutcomes": {
+      "PresentStatus": [
+        "offline"
+      ]
+    },
+    "failurePaths": 3,
+    "id": "edu.example.univ.student-status",
+    "localActions": 4,
+    "localFailurePaths": 3,
+    "networkActions": 0,
+    "offlinePaths": 4,
+    "pathList": [
+      {
+        "kind": "deny",
+        "remote": 0,
+        "steps": [
+          "CheckStudentVC:failure",
+          "NotifyNotShared:success"
+        ],
+        "terminal": "EndNotShared"
+      },
+      {
+        "kind": "deny",
+        "remote": 0,
+        "steps": [
+          "CheckStudentVC:success",
+          "ConfirmDisclosure:failure"
+        ],
+        "terminal": "EndNotShared"
+      },
+      {
+        "kind": "deny",
+        "remote": 0,
+        "steps": [
+          "CheckStudentVC:success",
+          "ConfirmDisclosure:success",
+          "PresentStatus:failure"
+        ],
+        "terminal": "EndNotShared"
+      },
+      {
+        "kind": "success",
+        "remote": 0,
+        "steps": [
+          "CheckStudentVC:success",
+          "ConfirmDisclosure:success",
+          "PresentStatus:success"
+        ],
+        "terminal": "EndShown"
+      }
+    ],
+    "paths": 4,
+    "payloadBytes": 1038,
+    "remoteVisibleEvents": 0,
+    "states": 6,
+    "successPathActions": [
+      3
+    ],
+    "successPathRemote": [
+      0
+    ],
+    "successPaths": 1,
+    "terminals": [
+      "EndNotShared",
+      "EndShown"
+    ],
+    "transitions": 7,
+    "version": 1
+  },
+  "transit-inspection": {
+    "actions": 5,
+    "backendVisibleOutcomes": 8,
+    "bpmnBytes": 5388,
+    "bytes": 1706,
+    "compileReport": {
+      "bpmnFlows": 10,
+      "bpmnNodes": 11,
+      "defaultCovered": {},
+      "failClosedOutcomes": {
+        "CheckTicket": [],
+        "LogFailed": [],
+        "LogPassed": [],
+        "NotifyNoTicket": [],
+        "PresentProof": [
+          "offline"
+        ]
+      },
+      "states": 8,
+      "transitions": 7
+    },
+    "digest": "c4fbcfc54794ea3a30edfda694ef0409c1a135776d4d36c7dbbac1e4aa81b25f",
+    "failClosedOutcomes": {
+      "PresentProof": [
+        "offline"
+      ]
+    },
+    "failurePaths": 2,
+    "id": "org.example.transit.inspection",
+    "localActions": 5,
+    "localFailurePaths": 2,
+    "networkActions": 0,
+    "offlinePaths": 3,
+    "pathList": [
+      {
+        "kind": "deny",
+        "remote": 0,
+        "steps": [
+          "CheckTicket:failure",
+          "NotifyNoTicket:success"
+        ],
+        "terminal": "EndNoTicket"
+      },
+      {
+        "kind": "deny",
+        "remote": 0,
+        "steps": [
+          "CheckTicket:success",
+          "PresentProof:failure",
+          "LogFailed:success"
+        ],
+        "terminal": "EndRejected"
+      },
+      {
+        "kind": "success",
+        "remote": 0,
+        "steps": [
+          "CheckTicket:success",
+          "PresentProof:success",
+          "LogPassed:success"
+        ],
+        "terminal": "EndPassed"
+      }
+    ],
+    "paths": 3,
+    "payloadBytes": 1147,
+    "remoteVisibleEvents": 0,
+    "states": 8,
+    "successPathActions": [
+      3
+    ],
+    "successPathRemote": [
+      0
+    ],
+    "successPaths": 1,
+    "terminals": [
+      "EndNoTicket",
+      "EndPassed",
+      "EndRejected"
+    ],
+    "transitions": 7,
+    "version": 3
+  },
+  "transit-ticket": {
+    "actions": 4,
+    "backendVisibleOutcomes": 15,
+    "bpmnBytes": 5981,
+    "bytes": 1758,
+    "compileReport": {
+      "bpmnFlows": 13,
+      "bpmnNodes": 11,
+      "defaultCovered": {},
+      "failClosedOutcomes": {
+        "CheckEmployeeVC": [],
+        "NotifyNoEmployeeVC": [],
+        "PresentEmployment": [],
+        "RequestTicket": []
+      },
+      "states": 7,
+      "transitions": 9
+    },
+    "digest": "0759d0dccfa196ae308b9601b51c8f4c3fa71fca5aeb9f2cd7837df6d7ed85ad",
+    "failClosedOutcomes": {},
+    "failurePaths": 5,
+    "id": "org.example.transit.monthly-ticket",
+    "localActions": 2,
+    "localFailurePaths": 1,
+    "networkActions": 2,
+    "offlinePaths": 1,
+    "pathList": [
+      {
+        "kind": "deny",
+        "remote": 0,
+        "steps": [
+          "CheckEmployeeVC:failure",
+          "NotifyNoEmployeeVC:success"
+        ],
+        "terminal": "EndDenied"
+      },
+      {
+        "kind": "deny",
+        "remote": 1,
+        "steps": [
+          "CheckEmployeeVC:success",
+          "PresentEmployment:failure"
+        ],
+        "terminal": "EndDenied"
+      },
+      {
+        "kind": "error",
+        "remote": 1,
+        "steps": [
+          "CheckEmployeeVC:success",
+          "PresentEmployment:offline"
+        ],
+        "terminal": "EndOffline"
+      },
+      {
+        "kind": "deny",
+        "remote": 2,
+        "steps": [
+          "CheckEmployeeVC:success",
+          "PresentEmployment:success",
+          "RequestTicket:failure"
+        ],
+        "terminal": "EndDenied"
+      },
+      {
+        "kind": "error",
+        "remote": 2,
+        "steps": [
+          "CheckEmployeeVC:success",
+          "PresentEmployment:success",
+          "RequestTicket:offline"
+        ],
+        "terminal": "EndOffline"
+      },
+      {
+        "kind": "success",
+        "remote": 2,
+        "steps": [
+          "CheckEmployeeVC:success",
+          "PresentEmployment:success",
+          "RequestTicket:success"
+        ],
+        "terminal": "EndIssued"
+      }
+    ],
+    "paths": 6,
+    "payloadBytes": 1186,
+    "remoteVisibleEvents": 8,
+    "states": 7,
+    "successPathActions": [
+      3
+    ],
+    "successPathRemote": [
+      2
+    ],
+    "successPaths": 1,
+    "terminals": [
+      "EndDenied",
+      "EndIssued",
+      "EndOffline"
+    ],
+    "transitions": 9,
+    "version": 2
+  }
+}

@@ -1,0 +1,204 @@
+{
+  "config": "Release",
+  "credentialOps": {
+    "attributes": 8,
+    "bbsProofBytes": 656,
+    "bbsProofMedianUs": 6745.083,
+    "bbsProofP95Us": 6979.25,
+    "bbsProofStdUs": 126.98043207800633,
+    "bbsSignMedianUs": 1972.417,
+    "bbsVerifyMedianUs": 7309.5,
+    "bbsVerifyP95Us": 7400.625,
+    "bbsVerifyStdUs": 59.018007656198215,
+    "es256SignMedianUs": 120.334,
+    "es256SignP95Us": 152,
+    "es256SignStdUs": 21.420344874792605,
+    "revealed": 3,
+    "sdjwtBytes": 1293,
+    "sdjwtPresentMedianUs": 672.417,
+    "sdjwtPresentP95Us": 712.958,
+    "sdjwtPresentStdUs": 22.99977722308485
+  },
+  "device": {
+    "marketingName": "iPhone 13 Pro",
+    "model": "iPhone14,2",
+    "os": "26.6.2",
+    "simulator": false
+  },
+  "driverStep": {
+    "medianUs": 525.084,
+    "p95Us": 638.5,
+    "persistMedianUs": 96.541,
+    "readRecordMedianUs": 2.667,
+    "revalidateMedianUs": 333.75,
+    "samples": 1000,
+    "startMedianUs": 536.75,
+    "startP95Us": 573.625,
+    "stdUs": 47.60954773399784
+  },
+  "ed25519Verify": {
+    "medianUs": 70.25,
+    "p95Us": 74.125
+  },
+  "packages": {
+    "hotel-checkin": {
+      "advancePerTransitionUs": 0.4583333333333333,
+      "installMedianUs": 368.292,
+      "installP95Us": 405.667,
+      "installStdUs": 16.28511009026022,
+      "jwsBytes": 3041,
+      "runSuccessPathMedianUs": 5.625,
+      "runSuccessPathP95Us": 5.709,
+      "runSuccessPathStdUs": 0.05223327988030346,
+      "states": 12,
+      "transitions": 6,
+      "validateMedianUs": 330.666,
+      "validateP95Us": 353.375,
+      "validateStdUs": 8.806525263271752
+    },
+    "hotel-checkout": {
+      "advancePerTransitionUs": 0.4585,
+      "installMedianUs": 207.417,
+      "installP95Us": 225.333,
+      "installStdUs": 6.6568901895561,
+      "jwsBytes": 1386,
+      "runSuccessPathMedianUs": 2.125,
+      "runSuccessPathP95Us": 2.25,
+      "runSuccessPathStdUs": 1.1132422731019682,
+      "states": 6,
+      "transitions": 2,
+      "validateMedianUs": 173.291,
+      "validateP95Us": 189.167,
+      "validateStdUs": 5.53282810198385
+    },
+    "student-status": {
+      "advancePerTransitionUs": 0.4583333333333333,
+      "installMedianUs": 224.666,
+      "installP95Us": 255.541,
+      "installStdUs": 13.725320267418562,
+      "jwsBytes": 1556,
+      "runSuccessPathMedianUs": 2.958,
+      "runSuccessPathP95Us": 3,
+      "runSuccessPathStdUs": 0.7751819098913737,
+      "states": 6,
+      "transitions": 3,
+      "validateMedianUs": 189.375,
+      "validateP95Us": 206,
+      "validateStdUs": 5.800486880568874
+    },
+    "transit-inspection": {
+      "advancePerTransitionUs": 0.4306666666666667,
+      "installMedianUs": 242.75,
+      "installP95Us": 261.417,
+      "installStdUs": 7.500225282589018,
+      "jwsBytes": 1706,
+      "runSuccessPathMedianUs": 2.875,
+      "runSuccessPathP95Us": 2.959,
+      "runSuccessPathStdUs": 0.04802151922437727,
+      "states": 8,
+      "transitions": 3,
+      "validateMedianUs": 207.333,
+      "validateP95Us": 222.875,
+      "validateStdUs": 5.934384070884252
+    },
+    "transit-ticket": {
+      "advancePerTransitionUs": 0.4583333333333333,
+      "installMedianUs": 244.5,
+      "installP95Us": 258.667,
+      "installStdUs": 7.2118984568787425,
+      "jwsBytes": 1758,
+      "runSuccessPathMedianUs": 3.041,
+      "runSuccessPathP95Us": 3.167,
+      "runSuccessPathStdUs": 0.8633139050085791,
+      "states": 7,
+      "transitions": 3,
+      "validateMedianUs": 208.875,
+      "validateP95Us": 220.875,
+      "validateStdUs": 4.815082324008393
+    }
+  },
+  "pathReplay": {
+    "agreeing": 25,
+    "replayed": 25
+  },
+  "prototypeEngine": {
+    "installMedianUs": 1986.875,
+    "installP95Us": 2039.917,
+    "installStdUs": 30.29026787252445,
+    "statechartBytes": 6712,
+    "states": 17,
+    "stepMedianUs": 175.166,
+    "stepP95Us": 195.959,
+    "stepStdUs": 24.332263928483297
+  },
+  "stress": {
+    "linear 10 (notification)": {
+      "jwsBytes": 1822,
+      "repeats": 300,
+      "states": 11,
+      "validateMedianUs": 232.875,
+      "validateP95Us": 244.375,
+      "validateStdUs": 4.452471170301209
+    },
+    "linear 100 (notification)": {
+      "jwsBytes": 14904,
+      "repeats": 300,
+      "states": 101,
+      "validateMedianUs": 1636.875,
+      "validateP95Us": 1695.541,
+      "validateStdUs": 22.824435468464056
+    },
+    "linear 1000 (mixed)": {
+      "jwsBytes": 178774,
+      "repeats": 30,
+      "states": 1001,
+      "validateMedianUs": 19206.459,
+      "validateP95Us": 19701.208,
+      "validateStdUs": 227.40511569050634
+    },
+    "linear 1000 (notification)": {
+      "jwsBytes": 148107,
+      "repeats": 30,
+      "states": 1001,
+      "validateMedianUs": 15959.625,
+      "validateP95Us": 16133.125,
+      "validateStdUs": 94.56964001363858
+    },
+    "linear 1000 (presentation)": {
+      "jwsBytes": 269440,
+      "repeats": 30,
+      "states": 1001,
+      "validateMedianUs": 28551.708,
+      "validateP95Us": 28882.083,
+      "validateStdUs": 185.929528805637
+    },
+    "tree depth 10": {
+      "jwsBytes": 222506,
+      "repeats": 30,
+      "states": 2047,
+      "validateMedianUs": 23349.875,
+      "validateP95Us": 23427.375,
+      "validateStdUs": 198.77541332298634
+    },
+    "tree depth 2": {
+      "jwsBytes": 1002,
+      "repeats": 300,
+      "states": 7,
+      "validateMedianUs": 144.417,
+      "validateP95Us": 157.416,
+      "validateStdUs": 5.845859724658999
+    },
+    "tree depth 5": {
+      "jwsBytes": 6858,
+      "repeats": 300,
+      "states": 63,
+      "validateMedianUs": 767.5,
+      "validateP95Us": 811.125,
+      "validateStdUs": 14.344124207367168
+    }
+  },
+  "vectors": {
+    "agreeing": 27,
+    "total": 27
+  }
+}

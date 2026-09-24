@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Monthly employee transit ticket, restricted port of the issuance part of
+     the prototype's transit model. Issuance is inherently online. The
+     month-end expiry and revocation event subprocesses of the original model
+     are handled by credential validity and issuer status, not by the wallet. -->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Defs_TransitTicket" targetNamespace="urn:example:processes:transit">
+  <bpmn:process id="TransitTicket" name="Monthly employee ticket" isExecutable="true">
+    <bpmn:extensionElements><camunda:properties>
+      <camunda:property name="packageId" value="org.example.transit.monthly-ticket"/>
+      <camunda:property name="version" value="2"/>
+      <camunda:property name="minVersion" value="1"/>
+      <camunda:property name="notAfter" value="2027-03-31T23:59:59Z"/>
+    </camunda:properties></bpmn:extensionElements>
+
+    <bpmn:startEvent id="Start"/>
+    <bpmn:sequenceFlow id="f0" sourceRef="Start" targetRef="CheckEmployeeVC"/>
+
+    <bpmn:task id="CheckEmployeeVC" name="Check for an employee credential">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="VERIFY_LOCAL_CREDENTIAL"/>
+        <camunda:property name="credentialType" value="EmployeeVC"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f1" sourceRef="CheckEmployeeVC" targetRef="GwEmployee"/>
+    <bpmn:exclusiveGateway id="GwEmployee"/>
+    <bpmn:sequenceFlow id="f1a" sourceRef="GwEmployee" targetRef="PresentEmployment">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'success'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f1b" sourceRef="GwEmployee" targetRef="NotifyNoEmployeeVC">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'failure'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+    <bpmn:task id="NotifyNoEmployeeVC" name="No employee credential">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="USER_NOTIFICATION"/>
+        <camunda:property name="message" value="No employee credential found. Please contact your employer."/>
+        <camunda:property name="alertType" value="WARNING"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f2" sourceRef="NotifyNoEmployeeVC" targetRef="EndDenied"/>
+
+    <bpmn:task id="PresentEmployment" name="Present employment to the ticket service">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="PRESENT_CREDENTIAL"/>
+        <camunda:property name="presentationRequest" value="EmployeeVC"/>
+        <camunda:property name="claims" value="employer,employmentStatus,ticketEntitlement"/>
+        <camunda:property name="channel" value="remote"/>
+        <camunda:property name="endpointUrl" value="https://tickets.transit.example/oid4vp"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f3" sourceRef="PresentEmployment" targetRef="GwPresent"/>
+    <bpmn:exclusiveGateway id="GwPresent"/>
+    <bpmn:sequenceFlow id="f3a" sourceRef="GwPresent" targetRef="RequestTicket">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'success'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f3b" sourceRef="GwPresent" targetRef="EndDenied">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'failure'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f3c" sourceRef="GwPresent" targetRef="EndOffline">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'offline'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+    <bpmn:task id="RequestTicket" name="Receive monthly ticket">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="REQUEST_VC"/>
+        <camunda:property name="credentialType" value="TransitTicketVC"/>
+        <camunda:property name="credentialEndpointUrl" value="https://tickets.transit.example/oid4vci"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f4" sourceRef="RequestTicket" targetRef="GwTicket"/>
+    <bpmn:exclusiveGateway id="GwTicket"/>
+    <bpmn:sequenceFlow id="f4a" sourceRef="GwTicket" targetRef="EndIssued">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'success'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f4b" sourceRef="GwTicket" targetRef="EndDenied">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'failure'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f4c" sourceRef="GwTicket" targetRef="EndOffline">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'offline'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+    <bpmn:endEvent id="EndIssued" name="Ticket stored">
+      <bpmn:extensionElements><camunda:properties><camunda:property name="result" value="success"/></camunda:properties></bpmn:extensionElements>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndDenied" name="Not issued">
+      <bpmn:extensionElements><camunda:properties><camunda:property name="result" value="deny"/></camunda:properties></bpmn:extensionElements>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndOffline" name="Service unreachable">
+      <bpmn:extensionElements><camunda:properties><camunda:property name="result" value="error"/></camunda:properties></bpmn:extensionElements>
+    </bpmn:endEvent>
+  </bpmn:process>
+</bpmn:definitions>

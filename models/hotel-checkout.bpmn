@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Hotel checkout station. Binding revocation happens at the issuer when the
+     checkout station accepts the presentation; the wallet only archives its
+     local copy of the room key (advisory cleanup). -->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Defs_HotelCheckout" targetNamespace="urn:example:processes:hotel">
+  <bpmn:process id="HotelCheckOut" name="Hotel checkout" isExecutable="true">
+    <bpmn:extensionElements><camunda:properties>
+      <camunda:property name="packageId" value="com.example.hotel.checkout"/>
+      <camunda:property name="version" value="1"/>
+      <camunda:property name="minVersion" value="1"/>
+      <camunda:property name="notAfter" value="2027-01-31T23:59:59Z"/>
+    </camunda:properties></bpmn:extensionElements>
+
+    <bpmn:startEvent id="Start"/>
+    <bpmn:sequenceFlow id="f0" sourceRef="Start" targetRef="PresentRoomKey"/>
+
+    <bpmn:task id="PresentRoomKey" name="Present room key at checkout">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="PRESENT_CREDENTIAL"/>
+        <camunda:property name="presentationRequest" value="DigitalRoomKeyVC"/>
+        <camunda:property name="claims" value="reservationId,roomNumber"/>
+        <camunda:property name="channel" value="remote"/>
+        <camunda:property name="endpointUrl" value="https://checkout.hotel.example/oid4vp"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f1" sourceRef="PresentRoomKey" targetRef="GwPresent"/>
+    <bpmn:exclusiveGateway id="GwPresent"/>
+    <bpmn:sequenceFlow id="f1a" sourceRef="GwPresent" targetRef="ArchiveKey">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'success'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f1b" sourceRef="GwPresent" targetRef="NotifyReception">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'failure'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f1c" sourceRef="GwPresent" targetRef="EndOffline">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${outcome == 'offline'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+    <bpmn:task id="ArchiveKey" name="Archive room key">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="MANAGE_CREDENTIAL"/>
+        <camunda:property name="credentialType" value="DigitalRoomKeyVC"/>
+        <camunda:property name="action" value="ARCHIVE"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f2" sourceRef="ArchiveKey" targetRef="EndCheckedOut"/>
+
+    <bpmn:task id="NotifyReception" name="Refer guest to reception">
+      <bpmn:extensionElements><camunda:properties>
+        <camunda:property name="actionType" value="USER_NOTIFICATION"/>
+        <camunda:property name="message" value="Checkout could not be completed. Please contact the reception."/>
+        <camunda:property name="alertType" value="WARNING"/>
+      </camunda:properties></bpmn:extensionElements>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="f3" sourceRef="NotifyReception" targetRef="EndDenied"/>
+
+    <bpmn:endEvent id="EndCheckedOut" name="Checked out">
+      <bpmn:extensionElements><camunda:properties><camunda:property name="result" value="success"/></camunda:properties></bpmn:extensionElements>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndDenied" name="Manual checkout">
+      <bpmn:extensionElements><camunda:properties><camunda:property name="result" value="deny"/></camunda:properties></bpmn:extensionElements>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndOffline" name="Service unreachable">
+      <bpmn:extensionElements><camunda:properties><camunda:property name="result" value="error"/></camunda:properties></bpmn:extensionElements>
+    </bpmn:endEvent>
+  </bpmn:process>
+</bpmn:definitions>

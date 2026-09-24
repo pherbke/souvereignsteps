@@ -1,0 +1,64 @@
+{
+  "floor": 1,
+  "id": "com.example.hotel.checkout",
+  "initial": "PresentRoomKey",
+  "notAfter": "2027-01-31T23:59:59Z",
+  "schema": "glovebox/1",
+  "states": {
+    "ArchiveKey": {
+      "action": {
+        "params": {
+          "action": "ARCHIVE",
+          "credentialType": "DigitalRoomKeyVC"
+        },
+        "type": "MANAGE_CREDENTIAL"
+      },
+      "on": {
+        "success": "EndCheckedOut"
+      }
+    },
+    "EndCheckedOut": {
+      "terminal": "success"
+    },
+    "EndDenied": {
+      "terminal": "deny"
+    },
+    "EndOffline": {
+      "terminal": "error"
+    },
+    "NotifyReception": {
+      "action": {
+        "params": {
+          "alertType": "WARNING",
+          "message": "Checkout could not be completed. Please contact the reception."
+        },
+        "type": "USER_NOTIFICATION"
+      },
+      "on": {
+        "success": "EndDenied"
+      }
+    },
+    "PresentRoomKey": {
+      "action": {
+        "params": {
+          "channel": "remote",
+          "claims": [
+            "reservationId",
+            "roomNumber"
+          ],
+          "endpointUrl": "https://checkout.hotel.example/oid4vp",
+          "presentationRequest": [
+            "DigitalRoomKeyVC"
+          ]
+        },
+        "type": "PRESENT_CREDENTIAL"
+      },
+      "on": {
+        "failure": "NotifyReception",
+        "offline": "EndOffline",
+        "success": "ArchiveKey"
+      }
+    }
+  },
+  "version": 1
+}

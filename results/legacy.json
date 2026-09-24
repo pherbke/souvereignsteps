@@ -1,0 +1,58 @@
+{
+  "hospitality": {
+    "authoredRevocationTasks": 1,
+    "flowWalkingRevocationStates": 1,
+    "flowWalkingStates": 17,
+    "restrictedDiagnostics": [
+      {
+        "code": "E_UNSUPPORTED",
+        "element": "ICE_Lobby",
+        "message": "intermediateCatchEvent is outside the supported subset"
+      },
+      {
+        "code": "E_UNSUPPORTED",
+        "element": "EBG_Checkout",
+        "message": "eventBasedGateway is outside the supported subset"
+      },
+      {
+        "code": "E_UNSUPPORTED",
+        "element": "ICE_Checkout",
+        "message": "intermediateCatchEvent is outside the supported subset"
+      },
+      {
+        "code": "E_UNSUPPORTED",
+        "element": "ICE_Timer",
+        "message": "intermediateCatchEvent is outside the supported subset"
+      }
+    ],
+    "restrictedRejects": true
+  },
+  "transit": {
+    "authoredRevocationTasks": 3,
+    "flowWalkingRevocationStates": 0,
+    "flowWalkingStates": 14,
+    "restrictedDiagnostics": [
+      {
+        "code": "E_UNSUPPORTED",
+        "element": "ICE_NFC",
+        "message": "intermediateCatchEvent is outside the supported subset"
+      },
+      {
+        "code": "E_UNSUPPORTED",
+        "element": "ESP_Revoke",
+        "message": "event subprocess is outside the supported subset"
+      },
+      {
+        "code": "E_UNSUPPORTED",
+        "element": "ESP_Expiry",
+        "message": "event subprocess is outside the supported subset"
+      },
+      {
+        "code": "E_UNSUPPORTED",
+        "element": "Start_Timer",
+        "message": "timerEventDefinition on startEvent is outside the supported subset"
+      }
+    ],
+    "restrictedRejects": true
+  }
+}
